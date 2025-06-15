@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>打飞机 - HTML5小游戏</title>
+  <style>
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #e3f2fd;
+      font-family: '微软雅黑', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      max-height: 100vh;
+    }
+    .header {
+      width: 100vw;
+      background: #1976d2;
+      color: #fff;
+      text-align: center;
+      padding: 16px 0 8px 0;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .score {
+      margin: 10px 0 10px 0;
+      font-size: 1.1rem;
+      color: #1976d2;
+      font-weight: bold;
+    }
+    .game-area {
+      background: #bbdefb;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      margin: 20px 0 10px 0;
+      position: relative;
+      width: 90vw;
+      height: 90vw;
+      max-width: 320px;
+      max-height: 480px;
+      touch-action: none;
+      box-sizing: border-box;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 10px;
+    }
+    .restart-btn {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .restart-btn:hover {
+      background: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">打飞机</div>
+  <div class="score">分数：<span id="score">0</span></div>
+  <button class="restart-btn" onclick="restartGame()">重新开始</button>
+  <div class="game-area"><canvas id="game" width="320" height="480"></canvas></div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = 320, H = 480;
+    let player, bullets, enemies, score, alive, timer, left, right, shoot;
+
+    function restartGame() {
+      player = {x: W/2, y: H-40, w: 32, h: 32};
+      bullets = [];
+      enemies = [];
+      score = 0;
+      alive = true;
+      left = right = shoot = false;
+      document.getElementById('score').textContent = score;
+      if (timer) clearInterval(timer);
+      timer = setInterval(gameLoop, 20);
+    }
+
+    function gameLoop() {
+      if (!alive) return;
+      // 玩家移动
+      if (left) player.x -= 4;
+      if (right) player.x += 4;
+      player.x = Math.max(0, Math.min(W-player.w, player.x));
+      // 子弹移动
+      for (let b of bullets) b.y -= 8;
+      // 敌机生成
+      if (Math.random() < 0.03) {
+        enemies.push({x: Math.random()*(W-32), y: -32, w: 32, h: 32, speed: 1+Math.random()*1});
+      }
+      // 敌机移动
+      for (let e of enemies) e.y += e.speed;
+      // 子弹与敌机碰撞
+      for (let i = enemies.length-1; i >= 0; i--) {
+        let e = enemies[i];
+        for (let j = bullets.length-1; j >= 0; j--) {
+          let b = bullets[j];
+          if (b.x < e.x+e.w && b.x+b.w > e.x && b.y < e.y+e.h && b.y+b.h > e.y) {
+            enemies.splice(i,1);
+            bullets.splice(j,1);
+            score += 10;
+            document.getElementById('score').textContent = score;
+            break;
+          }
+        }
+      }
+      // 敌机与玩家碰撞
+      for (let e of enemies) {
+        if (e.x < player.x+player.w && e.x+e.w > player.x && e.y < player.y+player.h && e.y+e.h > player.y) {
+          alive = false;
+          clearInterval(timer);
+          ctx.fillStyle = '#d32f2f';
+          ctx.font = 'bold 32px 微软雅黑';
+          ctx.fillText('游戏结束', 80, 240);
+          return;
+        }
+      }
+      // 清理越界子弹和敌机
+      bullets = bullets.filter(b => b.y > -b.h);
+      enemies = enemies.filter(e => e.y < H+e.h);
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      // 画玩家飞机（蓝色，带机翼和尾翼）
+      ctx.save();
+      ctx.translate(player.x+player.w/2, player.y+player.h/2);
+      ctx.scale(1.1, 1.1);
+      // 机身
+      ctx.fillStyle = '#1976d2';
+      ctx.beginPath();
+      ctx.moveTo(0, -16); // 机头
+      ctx.lineTo(-10, 10); // 左下
+      ctx.lineTo(0, 6); // 中下
+      ctx.lineTo(10, 10); // 右下
+      ctx.closePath();
+      ctx.fill();
+      // 机翼
+      ctx.fillStyle = '#64b5f6';
+      ctx.fillRect(-16, 2, 32, 5);
+      // 尾翼
+      ctx.fillStyle = '#1976d2';
+      ctx.fillRect(-4, 8, 8, 6);
+      ctx.restore();
+      // 画子弹
+      ctx.fillStyle = '#d32f2f';
+      for (let b of bullets) {
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+      }
+      // 画敌机（黄色飞机造型）
+      for (let e of enemies) {
+        ctx.save();
+        ctx.translate(e.x+e.w/2, e.y+e.h/2);
+        ctx.scale(1.1, 1.1);
+        // 机身
+        ctx.fillStyle = '#ffb300';
+        ctx.beginPath();
+        ctx.moveTo(0, -16);
+        ctx.lineTo(-10, 10);
+        ctx.lineTo(0, 6);
+        ctx.lineTo(10, 10);
+        ctx.closePath();
+        ctx.fill();
+        // 机翼
+        ctx.fillStyle = '#ffe082';
+        ctx.fillRect(-16, 2, 32, 5);
+        // 尾翼
+        ctx.fillStyle = '#ffb300';
+        ctx.fillRect(-4, 8, 8, 6);
+        ctx.restore();
+      }
+    }
+
+    // 键盘控制
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') left = true;
+      if (e.key === 'ArrowRight') right = true;
+      if (e.key === ' ' || e.key === 'ArrowUp') shoot = true;
+    });
+    document.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft') left = false;
+      if (e.key === 'ArrowRight') right = false;
+      if (e.key === ' ' || e.key === 'ArrowUp') shoot = false;
+    });
+    // 触屏控制
+    let touchX = null;
+    document.querySelector('.game-area').addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      touchX = t.clientX;
+    });
+    document.querySelector('.game-area').addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      if (touchX !== null) {
+        if (t.clientX < touchX-10) left = true, right = false;
+        else if (t.clientX > touchX+10) right = true, left = false;
+        else left = right = false;
+      }
+    });
+    document.querySelector('.game-area').addEventListener('touchend', e => {
+      left = right = false;
+      shoot = true;
+      setTimeout(()=>{shoot=false;}, 100);
+      touchX = null;
+    });
+    // 自动发射子弹
+    setInterval(()=>{
+      if (alive && shoot) {
+        bullets.push({x: player.x+player.w/2-3, y: player.y-10, w: 6, h: 12});
+      }
+    }, 90);
+    // 初始化
+    restartGame();
+  </script>
+</body>
+</html> 
