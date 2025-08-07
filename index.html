@@ -1,74 +1,329 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>HTML5 网页小游戏合集</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: '微软雅黑', Arial, sans-serif;
-      background: #f0f0f0;
-    }
-    .game-selector {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      align-items: center;
-      background: #fff;
-      padding: 10px 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .game-btn {
-      background: #4caf50;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 18px;
-      font-size: 1rem;
-      margin: 0 5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .game-btn:hover {
-      background: #388e3c;
-    }
-    .game-iframe {
-      width: 100vw;
-      height: calc(100vh - 60px);
-      border: none;
-      display: block;
-      background: #222;
-    }
-    @media (max-width: 600px) {
-      .game-btn {
-        font-size: 0.95rem;
-        padding: 8px 10px;
-      }
-      .game-selector {
-        flex-direction: column;
-        gap: 6px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 十六型人格解读 (配对功能版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #f0f4f8; /* Fallback color */
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        .modal-active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        .analysis-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .analysis-content p {
+            margin-bottom: 1rem;
+        }
+        .analysis-content ul {
+            list-style-type: disc;
+            list-style-position: inside;
+            padding-left: 0.5rem;
+        }
+        .analysis-content li {
+            margin-bottom: 0.5rem;
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.8s ease-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .compat-analysis h5 {
+            font-weight: bold;
+            color: #4a5568;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+    </style>
 </head>
-<body>
-  <div class="game-selector">
-    <button class="game-btn" onclick="loadGame('tetris.html')">俄罗斯方块</button>
-    <button class="game-btn" onclick="loadGame('xiaoxiaole.html')">消消乐</button>
-    <button class="game-btn" onclick="loadGame('lianliankan.html')">连连看</button>
-    <button class="game-btn" onclick="loadGame('snake.html')">贪吃蛇</button>
-    <button class="game-btn" onclick="loadGame('maze.html')">打飞机</button>
-  </div>
-  <iframe id="gameFrame" class="game-iframe" src="tetris.html" allowfullscreen></iframe>
-  <script>
-    function loadGame(url) {
-      document.getElementById('gameFrame').src = url;
-    }
-  </script>
+<body class="text-slate-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <!-- Compatibility Checker -->
+        <section id="compatibility-checker" class="mb-12 bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/30 shadow-lg">
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 text-center mb-6">MBTI 性格配对</h2>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
+                <!-- Selector 1 -->
+                <div class="w-full md:w-auto">
+                    <select id="personality-select-1" class="w-full bg-slate-100 border border-slate-300 text-slate-800 text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-3">
+                        <option selected value="">选择你的类型</option>
+                    </select>
+                </div>
+                <!-- Heart Icon -->
+                <div class="text-red-500">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
+                </div>
+                <!-- Selector 2 -->
+                <div class="w-full md:w-auto">
+                    <select id="personality-select-2" class="w-full bg-slate-100 border border-slate-300 text-slate-800 text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-3">
+                        <option selected value="">选择对方的类型</option>
+                    </select>
+                </div>
+            </div>
+            <div class="text-center mb-6">
+                <button id="check-compatibility-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg hover:shadow-indigo-500/50">
+                    查看匹配度
+                </button>
+            </div>
+            <!-- Result Display -->
+            <div id="compatibility-result" class="text-center mt-4 flex items-start justify-center transition-all duration-500">
+                 <p class="text-slate-500 pt-12">选择两种性格类型，探索你们的关系潜力。</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-2">MBTI 十六型人格</h1>
+            <p class="text-lg text-slate-700">探索你的性格类型，发现独特的自己</p>
+        </header>
+
+        <div id="personality-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"></div>
+    </div>
+
+    <div id="personality-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop bg-black bg-opacity-60">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative border border-gray-200">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="modal-body" class="p-6 md:p-10"></div>
+        </div>
+    </div>
+
+    <script>
+        const personalities = [
+            // Analysts (分析家) - Purple
+            { id: 'INTJ', name: 'Architect', title: '建筑师', group: '分析家', color: '#8b5cf6', svg: `<svg viewBox="0 0 100 100"><g fill="#8b5cf6"><path d="M50 10 L90 50 L50 90 L10 50 Z" opacity="0.7"></path><rect x="40" y="40" width="20" height="20" rx="5"></rect></g></svg>`, description: '富有想象力和战略性的思想家，一切尽在计划之中。', fullDescription: '对于建筑师（INTJ）来说，生活就像一盘巨大的棋局。他们是天生的规划者，对知识有着强烈的渴望，并且总是在寻求创新的解决方案。他们独立、果断，并以高标准要求自己和他人。', aiAnalysis: `<h3>核心特征</h3><p>INTJ是天生的战略家，他们最显著的特征是强大的洞察力和对未来的远见。他们能够看到事物的本质和潜在的可能性，并制定出长期、复杂的计划来实现目标。他们是独立的思考者，不畏惧挑战权威，只相信逻辑和理性。</p><h3>潜在优势</h3><ul><li><strong>远见卓识：</strong> 能够预见未来的趋势和结果，做出明智的决策。</li><li><strong>逻辑严密：</strong> 擅长分析复杂问题，找到最高效的解决方案。</li><li><strong>意志坚定：</strong> 一旦设定目标，会以极大的决心和毅力去实现。</li><li><strong>知识渊博：</strong> 对知识有无限的渴望，是终身学习者。</li></ul><h3>可能的盲点</h3><ul><li><strong>社交脱节：</strong> 可能忽视他人的情感需求，显得冷漠或不近人情。</li><li><strong>过于自信：</strong> 有时会因为对自己能力的过度自信而忽视他人的意见。</li><li><strong>缺乏耐心：</strong> 对效率低下或不合逻辑的人和事缺乏耐心。</li></ul><h3>职业与发展</h3><p>INTJ在需要战略思维、创新和独立工作的领域表现出色，如科学研究、工程、技术开发、管理咨询等。他们需要学习更好地理解和回应他人的情感，以建立更和谐的人际关系。</p>` },
+            { id: 'INTP', name: 'Logician', title: '逻辑学家', group: '分析家', color: '#8b5cf6', svg: `<svg viewBox="0 0 100 100"><g fill="#8b5cf6"><circle cx="50" cy="50" r="40" opacity="0.7"></circle><path d="M30 70 Q 50 30, 70 70" stroke="white" stroke-width="5" fill="none"></path></g></svg>`, description: '具有创造力的发明家，对知识有着止不住的渴望。', fullDescription: '逻辑学家（INTP）是终极的思考者和问题解决者。他们沉浸在自己的思想世界里，对理论和抽象概念充满热情。他们以独特的视角看待世界，总是在分析、质疑和探索事物运作的原理。', aiAnalysis: `<h3>核心特征</h3><p>INTP是天生的思想家和理论家。他们对世界充满好奇，总是在寻找事物背后的逻辑和原理。他们享受复杂的理论和抽象概念，并且能够发现不同思想之间的联系。他们是灵活的、有创造力的，并且对新想法持开放态度。</p><h3>潜在优势</h3><ul><li><strong>分析能力：</strong> 能够深入分析复杂系统，找出其中的模式和逻辑。</li><li><strong>创造力：</strong> 能够提出独创性的想法和解决方案。</li><li><strong>客观性：</strong> 能够保持客观和公正，不受情感偏见的影响。</li><li><strong>求知欲强：</strong> 对知识的渴望驱使他们不断学习和探索。</li></ul><h3>可能的盲点</h3><ul><li><strong>不切实际：</strong> 有时会过于沉迷于理论而忽视现实世界的实际操作。</li><li><strong>拖延倾向：</strong> 在将想法付诸实践时可能会犹豫不决或拖延。</li><li><strong>社交笨拙：</strong> 在社交场合可能会感到不自在，难以理解他人的情感。</li></ul><h3>职业与发展</h3><p>INTP在需要深度思考和创造力的领域中大放异彩，如学术研究、哲学、计算机科学、战略分析等。他们需要学会将伟大的想法转化为实际行动，并努力提高自己的社交技巧。</p>` },
+            { id: 'ENTJ', name: 'Commander', title: '指挥官', group: '分析家', color: '#8b5cf6', svg: `<svg viewBox="0 0 100 100"><g fill="#8b5cf6"><path d="M20 20 H 80 V 80 H 20 Z" opacity="0.7"></path><path d="M50 30 L70 70 L30 70 Z" fill="white"></path></g></svg>`, description: '大胆、富有想象力且意志坚强的领导者，总能找到或创造解决方法。', fullDescription: '指挥官（ENTJ）是天生的领导者。他们充满魅力和自信，能够激励团队实现宏伟目标。他们是果断的决策者，善于发现低效之处并制定清晰的改进计划，推动世界前进。', aiAnalysis: `<h3>核心特征</h3><p>ENTJ是天生的领导者和组织者。他们具有强大的驱动力和清晰的愿景，能够激励他人朝着共同的目标努力。他们是果断的、有条理的，并且总是着眼于大局。他们享受挑战，并且有能力将复杂的计划付诸实施。</p><h3>潜在优势</h3><ul><li><strong>领导才能：</strong> 能够有效地组织和领导团队，实现宏伟目标。</li><li><strong>战略思维：</strong> 善于制定长期计划，并预见潜在的障碍。</li><li><strong>自信果断：</strong> 能够快速做出艰难的决定，并对自己的能力充满信心。</li><li><strong>高效执行：</strong> 能够将计划转化为具体的行动，并推动项目前进。</li></ul><h3>可能的盲点</h3><ul><li><strong>缺乏耐心：</strong> 对他人的低效率或犹豫不决感到不耐烦。</li><li><strong>控制欲强：</strong> 有时可能会显得过于专横或控制欲强。</li><li><strong>忽视情感：</strong> 在追求目标的过程中，可能会忽视自己和他人的情感需求。</li></ul><h3>职业与发展</h3><p>ENTJ在领导和管理岗位上表现出色，如企业高管、企业家、项目经理、政治家等。他们需要学会倾听他人的意见，并更加关注团队成员的情感健康。</p>` },
+            { id: 'ENTP', name: 'Debater', title: '辩论家', group: '分析家', color: '#8b5cf6', svg: `<svg viewBox="0 0 100 100"><g fill="#8b5cf6"><path d="M50 15 L85 85 L15 85 Z" opacity="0.7"></path><path d="M50 80 L20 20 L80 20 Z" fill="white" opacity="0.5"></path></g></svg>`, description: '聪明、好奇的思想者，从不畏惧思想的碰撞。', fullDescription: '辩论家（ENTP）是思想的魔鬼代言人，他们热衷于从各种角度撕裂论点和信念。他们机智、反应迅速，享受智力上的挑战，并且能够轻松地在不同的想法之间切换，寻找真理。', aiAnalysis: `<h3>核心特征</h3><p>ENTP是思想的火花，他们热爱智力辩论和思想的碰撞。他们机智、敏捷，能够从多个角度看待问题。他们是天生的创新者，总是在寻找新的可能性，并挑战现有的规范。他们充满活力，富有感染力。</p><h3>潜在优势</h3><ul><li><strong>思维敏捷：</strong> 能够快速理解复杂的概念，并提出新颖的观点。</li><li><strong>善于辩论：</strong> 能够清晰地表达自己的观点，并有效地反驳他人。</li><li><strong>适应性强：</strong> 能够轻松地适应新环境和新挑战。</li><li><strong>富有魅力：</strong> 能够用他们的热情和智慧吸引和激励他人。</li></ul><h3>可能的盲点</h3><ul><li><strong>缺乏专注：</strong> 可能会因为兴趣过于广泛而难以专注于一个项目。</li><li><strong>喜欢争论：</strong> 有时可能会为了争论而争论，而不是为了解决问题。</li><li><strong>不注重细节：</strong> 可能会忽视项目执行中的重要细节。</li></ul><h3>职业与发展</h3><p>ENTP在需要快速思考和创新的领域中表现出色，如创业、市场营销、法律、咨询等。他们需要学会更有条理地完成项目，并注意不要因为无谓的争论而疏远他人。</p>` },
+            // Diplomats (外交家) - Green
+            { id: 'INFJ', name: 'Advocate', title: '提倡者', group: '外交家', color: '#10b981', svg: `<svg viewBox="0 0 100 100"><g fill="#10b981"><path d="M50 10 C 20 40, 20 60, 50 90 C 80 60, 80 40, 50 10 Z" opacity="0.7"></path><circle cx="50" cy="50" r="10" fill="white"></circle></g></svg>`, description: '安静而神秘，同时也是鼓舞人心且不知疲倦的理想主义者。', fullDescription: '提倡者（INFJ）是十六型人格中最稀有的类型。他们具有与生俱来的理想主义和道德感，但他们不是空想家，而是有能力采取具体行动来实现目标和产生持久的积极影响的人。', aiAnalysis: `<h3>核心特征</h3><p>INFJ是深刻而富有同情心的理想主义者。他们具有强大的直觉，能够深刻地理解他人的动机和情感。他们致力于帮助他人，并希望让世界变得更美好。他们是安静的、有原则的，并且对自己的价值观非常坚定。</p><h3>潜在优势</h3><ul><li><strong>同理心强：</strong> 能够深刻地感受和理解他人的情感。</li><li><strong>洞察力强：</strong> 能够洞察人性的复杂性和事物的深层含义。</li><li><strong>富有创意：</strong> 能够提出富有想象力和创造力的解决方案。</li><li><strong>信念坚定：</strong> 对自己的理想和价值观有着强烈的信念。</li></ul><h3>可能的盲点</h3><ul><li><strong>过于理想化：</strong> 有时会对现实世界感到失望，因为现实与他们的理想不符。</li><li><strong>容易倦怠：</strong> 可能会因为过度投入他人的问题而感到精疲力尽。</li><li><strong>难以被理解：</strong> 他们复杂的内心世界有时会让他人难以理解。</li></ul><h3>职业与发展</h3><p>INFJ在能够帮助他人的领域中找到满足感，如心理咨询、教育、医疗保健、艺术等。他们需要学会设定界限，保护自己的精力，并找到能够理解和支持他们的伙伴。</p>` },
+            { id: 'INFP', name: 'Mediator', title: '调停者', group: '外交家', color: '#10b981', svg: `<svg viewBox="0 0 100 100"><g fill="#10b981"><path d="M20 20 L80 20 L80 80 L20 80 Z" transform="rotate(45 50 50)" opacity="0.7"></path><circle cx="50" cy="50" r="20" fill="white" opacity="0.8"></circle></g></svg>`, description: '诗意、善良、利他的人，总是愿意帮助需要帮助的人。', fullDescription: '调停者（INFP）是真正的理想主义者，他们总是从最坏的人和事中寻找最好的一面，想方设法让世界变得更美好。他们安静、内向，但内心充满激情和火焰。', aiAnalysis: `<h3>核心特征</h3><p>INFP是充满激情和想象力的理想主义者。他们由自己的核心价值观驱动，并致力于追求真实和意义。他们是富有同情心的、有创造力的，并且对他人充满好奇。他们希望通过自己的方式为世界带来积极的改变。</p><h3>潜在优势</h3><ul><li><strong>价值观驱动：</strong> 对自己的信念非常坚定，并以此为行动指南。</li><li><strong>富有同情心：</strong> 能够与他人建立深厚的情感联系。</li><li><strong>创造力丰富：</strong> 能够通过艺术、写作等方式表达自己独特的内心世界。</li><li><strong>思想开放：</strong> 对新思想和不同观点持开放和接纳的态度。</li></ul><h3>可能的盲点</h3><ul><li><strong>过于敏感：</strong> 容易受到批评和负面情绪的影响。</li><li><strong>不切实际：</strong> 有时会因为过于理想化而难以适应现实。</li><li><strong>难以做决定：</strong> 在需要做出艰难选择时可能会犹豫不决。</li></ul><h3>职业与发展</h3><p>INFP在能够表达自我和帮助他人的领域中茁壮成长，如写作、艺术、社会工作、心理学等。他们需要学会更加务实地处理问题，并建立自信以应对外界的挑战。</p>` },
+            { id: 'ENFJ', name: 'Protagonist', title: '主人公', group: '外交家', color: '#10b981', svg: `<svg viewBox="0 0 100 100"><g fill="#10b981"><circle cx="50" cy="50" r="40" opacity="0.7"></circle><path d="M50 30 L65 60 L35 60 Z" fill="white"></path><path d="M50 70 L65 40 L35 40 Z" fill="white"></path></g></svg>`, description: '富有魅力、鼓舞人心的领导者，有感染听众的能力。', fullDescription: '主人公（ENFJ）是天生的领导者，充满激情和魅力。他们常常是我们的政治家、教练和老师，伸出援手，鼓励他人取得成就，并为整个世界的福祉着想。', aiAnalysis: `<h3>核心特征</h3><p>ENFJ是富有魅力和同情心的领导者。他们天生就善于与人打交道，能够激励和引导他人发挥出最大的潜力。他们对他人的需求非常敏感，并真诚地希望帮助他人成长。他们是热情、有责任感的组织者。</p><h3>潜在优势</h3><ul><li><strong>鼓舞人心：</strong> 能够用他们的热情和愿景激励他人。</li><li><strong>善于沟通：</strong> 能够清晰地表达自己的想法，并与他人建立良好的关系。</li><li><strong>富有同情心：</strong> 能够理解和关心他人的情感和需求。</li><li><strong>组织能力强：</strong> 能够有效地组织活动和项目，并带领团队取得成功。</li></ul><h3>可能的盲点</h3><ul><li><strong>过度牺牲：</strong> 可能会为了满足他人的需求而忽视自己的需求。</li><li><strong>对批评敏感：</strong> 可能会因为他人的负面反馈而感到受伤。</li><li><strong>理想化他人：</strong> 有时可能会过于理想化他人，而忽视他们的缺点。</li></ul><h3>职业与发展</h3><p>ENFJ在教育、咨询、人力资源、公共关系等领域表现出色。他们需要学会更好地照顾自己的需求，并在帮助他人的同时保持平衡。</p>` },
+            { id: 'ENFP', name: 'Campaigner', title: '竞选者', group: '外交家', color: '#10b981', svg: `<svg viewBox="0 0 100 100"><g fill="#10b981"><path d="M50 10 L90 90 L10 90 Z" opacity="0.6"></path><path d="M50 20 L80 80 L20 80 Z" fill="white" opacity="0.8"></path></g></svg>`, description: '热情、富有创造力且善于交际的自由精神，总能找到微笑的理由。', fullDescription: '竞选者（ENFP）是真正的自由精神。他们是人群中的开心果，但他们对社交的兴趣不仅仅是为了好玩。他们渴望与他人建立深刻的情感联系，并分享他们对生活的热情。', aiAnalysis: `<h3>核心特征</h3><p>ENFP是充满活力和想象力的自由灵魂。他们对生活充满热情，并总是在寻找新的可能性。他们善于与人交往，能够轻松地与他人建立联系。他们是富有创造力的、有同情心的，并且总是乐于探索新的想法和体验。</p><h3>潜在优势</h3><ul><li><strong>热情洋溢：</strong> 能够用他们的热情和活力感染他人。</li><li><strong>富有创意：</strong> 能够想出许多新颖和有趣的想法。</li><li><strong>善于交际：</strong> 能够与各种各样的人建立联系，并建立广泛的社交网络。</li><li><strong>适应性强：</strong> 能够轻松地适应变化，并享受新的体验。</li></ul><h3>可能的盲点</h3><ul><li><strong>容易分心：</strong> 可能会因为兴趣太多而难以坚持完成一个项目。</li><li><strong>情绪化：</strong> 他们的情绪可能会波动较大，容易受到外界影响。</li><li><strong>不善于处理细节：</strong> 可能会忽视项目中的细节和日常琐事。</li></ul><h3>职业与发展</h3><p>ENFP在需要创造力和人际交往的领域中表现出色，如市场营销、艺术、新闻、咨询等。他们需要学会更好地管理自己的时间和精力，并将他们的创意转化为实际成果。</p>` },
+            // Sentinels (守护者) - Blue
+            { id: 'ISTJ', name: 'Logistician', title: '物流师', group: '守护者', color: '#38bdf8', svg: `<svg viewBox="0 0 100 100"><g fill="#38bdf8"><rect x="15" y="15" width="70" height="70" rx="10" opacity="0.7"></rect><rect x="30" y="30" width="40" height="40" rx="5" fill="white"></rect></g></svg>`, description: '务实、注重事实的个体，可靠性不容置疑。', fullDescription: '物流师（ISTJ）以其正直、务实的逻辑和不懈的奉献精神而自豪。他们是社会和家庭中至关重要的核心成员，享受为维护传统、规则和标准而承担责任。', aiAnalysis: `<h3>核心特征</h3><p>ISTJ是可靠和务实的守护者。他们尊重事实和传统，并以极大的责任感履行自己的职责。他们是有条理的、注重细节的，并且非常可靠。他们相信通过努力工作和遵守规则可以实现稳定和安全。</p><h3>潜在优势</h3><ul><li><strong>责任感强：</strong> 对自己的承诺非常认真，是值得信赖的人。</li><li><strong>注重细节：</strong> 能够注意到并处理好项目中的每一个细节。</li><li><strong>有条不紊：</strong> 能够系统地组织工作和生活，确保一切井然有序。</li><li><strong>忠诚可靠：</strong> 对家庭、朋友和组织非常忠诚。</li></ul><h3>可能的盲点</h3><ul><li><strong>固执己见：</strong> 有时可能会因为过于固守规则而显得不够灵活。</li><li><strong>抗拒改变：</strong> 对新的或未经证实的方法持怀疑态度。</li><li><strong>不善表达情感：</strong> 可能会觉得难以表达自己的内心感受。</li></ul><h3>职业与发展</h3><p>ISTJ在需要精确和可靠性的领域中表现出色，如会计、法律、军事、管理等。他们需要学会对新思想持更开放的态度，并尝试更灵活地应对变化。</p>` },
+            { id: 'ISFJ', name: 'Defender', title: '守卫者', group: '守护者', color: '#38bdf8', svg: `<svg viewBox="0 0 100 100"><g fill="#38bdf8"><path d="M50 10 L90 35 V 85 L50 95 L10 85 V 35 Z" opacity="0.7"></path><path d="M50 25 L80 45 V 75 L50 85 L20 75 V 45 Z" fill="white" opacity="0.8"></path></g></svg>`, description: '非常敬业和热情的守护者，随时准备保护他们所爱的人。', fullDescription: '守卫者（ISFJ）是独特的个体，他们既敏感又善于分析，既保守又乐于接受新思想。他们非常可靠，对所爱之人充满深情，并致力于保护他们。', aiAnalysis: `<h3>核心特征</h3><p>ISFJ是温暖而富有责任感的保护者。他们非常关心他人的福祉，并致力于为他人提供支持和帮助。他们是谦虚的、勤奋的，并且对细节有很好的记忆力。他们通过具体的行动来表达他们的关爱。</p><h3>潜在优势</h3><ul><li><strong>乐于助人：</strong> 真诚地关心他人，并愿意为他人付出。</li><li><strong>可靠尽责：</strong> 对自己的责任非常认真，是值得信赖的伙伴。</li><li><strong>观察力敏锐：</strong> 能够注意到他人的需求和感受。</li><li><strong>实践能力强：</strong> 善于通过实际行动来解决问题和提供帮助。</li></ul><h3>可能的盲点</h3><ul><li><strong>过于谦虚：</strong> 可能会低估自己的贡献，不善于为自己争取。</li><li><strong>压抑需求：</strong> 可能会为了照顾他人而忽视自己的需求。</li><li><strong>抗拒冲突：</strong> 倾向于避免冲突，即使这意味着牺牲自己的利益。</li></ul><h3>职业与发展</h3><p>ISFJ在医疗保健、教育、社会服务、行政管理等领域中找到满足感。他们需要学会更好地表达自己的需求，并在必要时为自己挺身而出。</p>` },
+            { id: 'ESTJ', name: 'Executive', title: '执行官', group: '守护者', color: '#38bdf8', svg: `<svg viewBox="0 0 100 100"><g fill="#38bdf8"><rect x="20" y="30" width="60" height="40" rx="5" opacity="0.7"></rect><rect x="20" y="30" width="10" height="40" fill="white"></rect><rect x="70" y="30" width="10" height="40" fill="white"></rect></g></svg>`, description: '出色的管理者，在管理事务或人员方面无与伦比。', fullDescription: '执行官（ESTJ）是传统和秩序的代表，他们利用自己对是非对错的理解来团结家庭和社区。他们拥抱诚实、奉献和尊严的价值观，并因其清晰的建议和指导而受到重视。', aiAnalysis: `<h3>核心特征</h3><p>ESTJ是天生的管理者和组织者。他们是务实的、有决断力的，并且致力于维护秩序和传统。他们相信清晰的规则和标准，并期望他人也能遵守。他们是社区的支柱，以其领导能力和奉献精神而受到尊重。</p><h3>潜在优势</h3><ul><li><strong>组织能力强：</strong> 能够有效地管理人员和项目，确保一切顺利进行。</li><li><strong>决断力强：</strong> 能够快速做出决定，并采取行动。</li><li><strong>诚实正直：</strong> 对自己的原则非常坚定，是值得信赖的领导者。</li><li><strong>注重结果：</strong> 致力于实现具体的目标和成果。</li></ul><h3>可能的盲点</h3><ul><li><strong>缺乏灵活性：</strong> 有时可能会因为过于固守规则而显得僵化。</li><li><strong>不耐烦：</strong> 对不遵守规则或效率低下的人缺乏耐心。</li><li><strong>可能忽视他人感受：</strong> 在追求效率的过程中，可能会忽视他人的情感需求。</li></ul><h3>职业与发展</h3><p>ESTJ在管理、执法、金融、商业等领域表现出色。他们需要学会更加灵活地处理问题，并花时间去理解和考虑他人的观点。</p>` },
+            { id: 'ESFJ', name: 'Consul', title: '执政官', group: '守护者', color: '#38bdf8', svg: `<svg viewBox="0 0 100 100"><g fill="#38bdf8"><circle cx="50" cy="50" r="40" opacity="0.7"></circle><circle cx="40" cy="40" r="10" fill="white"></circle><circle cx="60" cy="40" r="10" fill="white"></circle><path d="M35 60 Q 50 75, 65 60" stroke="white" stroke-width="5" fill="none"></path></g></svg>`, description: '极富爱心、乐于社交、受欢迎的人，总是渴望提供帮助。', fullDescription: '执政官（ESFJ）是典型利他主义者，他们认真履行自己服务和帮助他人的责任。他们善于交际，喜欢成为众人瞩目的焦点，并且总是乐于倾听朋友们的最新消息。', aiAnalysis: `<h3>核心特征</h3><p>ESFJ是热情好客的社交家。他们非常关心他人的福祉，并致力于在社区中建立和谐的关系。他们是受欢迎的、有同情心的，并且总是乐于提供帮助。他们通过组织社交活动和关心他人来维系人际关系。</p><h3>潜在优势</h3><ul><li><strong>善于交际：</strong> 能够轻松地与他人建立联系，并享受社交活动。</li><li><strong>富有同情心：</strong> 真诚地关心他人的需求和感受。</li><li><strong>乐于助人：</strong> 总是愿意为他人提供实际的帮助和支持。</li><li><strong>责任感强：</strong> 对自己的家庭和社区有强烈的责任感。</li></ul><h3>可能的盲点</h3><ul><li><strong>寻求认可：</strong> 可能会非常在意他人的看法，并努力寻求他人的认可。</li><li><strong>对批评敏感：</strong> 容易受到负面反馈的影响。</li><li><strong>抗拒改变：</strong> 喜欢熟悉的环境，可能会抗拒改变。</li></ul><h3>职业与发展</h3><p>ESFJ在需要人际交往和关怀的领域中表现出色，如教学、护理、客户服务、活动策划等。他们需要学会更加独立地思考，并减少对他人认可的依赖。</p>` },
+            // Explorers (探险家) - Yellow
+            { id: 'ISTP', name: 'Virtuoso', title: '鉴赏家', group: '探险家', color: '#facc15', svg: `<svg viewBox="0 0 100 100"><g fill="#facc15"><path d="M20 80 L50 20 L80 80 Z" opacity="0.7"></path><circle cx="50" cy="65" r="10" fill="white"></circle></g></svg>`, description: '大胆、务实的实验者，擅长使用各种工具。', fullDescription: '鉴赏家（ISTP）喜欢用双手和眼睛去探索世界。他们天生就是制造者，从一个项目转移到另一个项目，只是为了从中获得乐趣，并从环境中学习。他们乐于助人，并与他人分享他们的经验。', aiAnalysis: `<h3>核心特征</h3><p>ISTP是冷静而务实的行动派。他们对世界如何运作充满好奇，并喜欢通过亲手操作来探索和理解。他们是天生的问题解决者，能够沉着地应对危机。他们是独立的、有逻辑的，并且享受当下的体验。</p><h3>潜在优势</h3><ul><li><strong>动手能力强：</strong> 擅长使用工具和解决实际问题。</li><li><strong>冷静沉着：</strong> 在压力下能够保持冷静，并做出理性的决策。</li><li><strong>观察力敏锐：</strong> 能够敏锐地观察周围的环境，并发现机会。</li><li><strong>适应性强：</strong> 能够灵活地应对突发情况和变化。</li></ul><h3>可能的盲点</h3><ul><li><strong>难以预测：</strong> 他们的行为有时可能会让别人觉得难以预测。</li><li><strong>不善于做长期计划：</strong> 更喜欢活在当下，而不是做长远的规划。</li><li><strong>情感内敛：</strong> 不太愿意表达自己的情感，可能会显得疏远。</li></ul><h3>职业与发展</h3><p>ISTP在需要动手能力和解决问题能力的领域中表现出色，如工程、机械、急救服务、手工艺等。他们需要学会在必要时做出承诺，并更好地与他人沟通他们的想法。</p>` },
+            { id: 'ISFP', name: 'Adventurer', title: '探险家', group: '探险家', color: '#facc15', svg: `<svg viewBox="0 0 100 100"><g fill="#facc15"><path d="M15 15 H 85 V 85 H 15 Z" opacity="0.2"></path><path d="M20,50 C20,20 80,20 80,50 C80,80 20,80 20,50 Z" fill="#facc15" opacity="0.7"></path></g></svg>`, description: '灵活、迷人的艺术家，随时准备探索和体验新事物。', fullDescription: '探险家（ISFP）是真正的艺术家，但并非总是传统意义上的艺术家。他们利用美学、设计甚至他们的选择和行动来突破社会常规的界限。他们喜欢用美丽和实验来颠覆传统期望。', aiAnalysis: `<h3>核心特征</h3><p>ISFP是温和而富有艺术气息的探险家。他们由自己的审美和价值观驱动，并希望通过创造性的方式来表达自己。他们是敏感的、有同情心的，并且享受当下的美好。他们是灵活的、随和的，并且对新体验持开放态度。</p><h3>潜在优势</h3><ul><li><strong>富有艺术感：</strong> 对美有敏锐的感知力，并能够创造出美丽的事物。</li><li><strong>富有同情心：</strong> 能够理解和关心他人的感受。</li><li><strong>随和灵活：</strong> 能够轻松地适应新环境，并享受当下的生活。</li><li><strong>忠于自我：</strong> 对自己的价值观非常忠诚，并希望活出真实的自己。</li></ul><h3>可能的盲点</h3><ul><li><strong>避免冲突：</strong> 倾向于避免冲突，可能会压抑自己的需求。</li><li><strong>不善于规划未来：</strong> 更关注现在，可能会忽视长远的规划。</li><li><strong>对批评敏感：</strong> 容易受到负面反馈的影响。</li></ul><h3>职业与发展</h3><p>ISFP在能够发挥其创造力和审美能力的领域中找到满足感，如艺术、设计、音乐、时尚等。他们需要学会更好地规划未来，并更自信地表达自己的观点。</p>` },
+            { id: 'ESTP', name: 'Entrepreneur', title: '企业家', group: '探险家', color: '#facc15', svg: `<svg viewBox="0 0 100 100"><g fill="#facc15"><polygon points="50,10 90,50 50,90 10,50" opacity="0.7"></polygon><polygon points="50,30 70,50 50,70 30,50" fill="white"></polygon></g></svg>`, description: '聪明、精力充沛、有敏锐洞察力的人，真正享受生活在边缘。', fullDescription: '企业家（ESTP）总能对周围环境产生影响。他们在派对上最容易被发现——在人群中穿梭，和每个人聊天。他们享受戏剧、激情和乐趣，不是为了情感刺激，而是因为这对他们的逻辑思维很有启发。', aiAnalysis: `<h3>核心特征</h3><p>ESTP是充满活力和魅力的行动派。他们热爱刺激和冒险，并享受成为众人瞩目的焦点。他们是务实的、有洞察力的，并且能够快速地抓住机会。他们是天生的社交家，能够轻松地影响和说服他人。</p><h3>潜在优势</h3><ul><li><strong>精力充沛：</strong> 充满活力，能够激励他人采取行动。</li><li><strong>善于观察：</strong> 能够敏锐地观察人和环境，并发现机会。</li><li><strong>善于解决问题：</strong> 能够快速地找到实际的解决方案。</li><li><strong>富有魅力：</strong> 能够用他们的自信和魅力吸引他人。</li></ul><h3>可能的盲点</h3><ul><li><strong>冲动行事：</strong> 有时可能会因为冲动而做出草率的决定。</li><li><strong>缺乏耐心：</strong> 对理论和长篇大论缺乏耐心。</li><li><strong>可能忽视规则：</strong> 可能会为了追求刺激而忽视规则和后果。</li></ul><h3>职业与发展</h3><p>ESTP在充满活力和挑战的领域中表现出色，如销售、创业、市场营销、体育等。他们需要学会在行动前三思，并更多地考虑长期的后果。</p>` },
+            { id: 'ESFP', name: 'Entertainer', title: '表演者', group: '探险家', color: '#facc15', svg: `<svg viewBox="0 0 100 100"><g fill="#facc15"><path d="M20 20 L80 50 L20 80 Z" opacity="0.7"></path><path d="M80 20 L20 50 L80 80 Z" opacity="0.5"></path></g></svg>`, description: '自发、精力充沛、热情的表演者——在他们身边从不无聊。', fullDescription: '表演者（ESFP）是天生的明星。他们喜欢成为众人瞩目的焦点，并把世界当作一个舞台。他们热爱生活，享受与他人共度的每一刻，并用他们独特的魅力和热情感染着周围的每一个人。', aiAnalysis: `<h3>核心特征</h3><p>ESFP是热情洋溢的表演者。他们热爱生活，并希望与他人分享他们的快乐。他们是自发的、乐观的，并且享受成为众人瞩目的焦点。他们是天生的社交家，能够轻松地活跃气氛，并为周围的人带来欢乐。</p><h3>潜在优势</h3><ul><li><strong>热情乐观：</strong> 充满活力和乐观精神，能够感染他人。</li><li><strong>善于交际：</strong> 能够轻松地与他人建立联系，并享受社交活动。</li><li><strong>审美能力强：</strong> 对美有敏锐的感知力，并注重自己的外表和风格。</li><li><strong>活在当下：</strong> 能够充分享受当下的每一刻。</li></ul><h3>可能的盲点</h3><ul><li><strong>不善于规划：</strong> 可能会忽视长远的规划和责任。</li><li><strong>容易感到无聊：</strong> 对单调和重复的工作感到厌烦。</li><li><strong>寻求关注：</strong> 可能会过度寻求他人的关注和赞美。</li></ul><h3>职业与发展</h3><p>ESFP在需要人际交往和创造力的领域中找到乐趣，如表演艺术、活动策划、销售、旅游等。他们需要学会更好地处理责任和长远规划，以实现更持久的成功。</p>` },
+        ];
+
+        // Compatibility data matrix
+        const compatibilityData = {
+            'INTJ':{'INTJ':{s:75,analysis:{overview:'思想同步，但需警惕共同的盲点。',strengths:'高度的智力共鸣和对未来的共同规划能力。',challenges:'可能在情感表达上都比较内敛，容易忽视彼此的感受。'}},'INTP':{s:85,analysis:{overview:'智力上的高度共鸣，共同探索理论世界。',strengths:'永不枯竭的话题，互相欣赏对方的才智。',challenges:'双方都可能不擅长处理实际生活琐事，需要有人扮演更务实的角色。'}},'ENTJ':{s:90,analysis:{overview:'强强联手，目标一致的权力组合。',strengths:'共同的野心和高效的执行力，能共同成就大业。',challenges:'关系中可能充满竞争，需要学会妥协和示弱。'}},'ENTP':{s:95,analysis:{overview:'思维的火花不断，充满挑战与乐趣。',strengths:'ENTP带来新奇想法，INTJ负责规划实现，完美互补。',challenges:'INTJ可能对ENTP的随性感到不安，需要建立信任。'}},'INFJ':{s:80,analysis:{overview:'深层的情感与思想交流，灵魂伴侣。',strengths:'彼此都能理解对方复杂的内心世界，情感连接深刻。',challenges:'都倾向于内省，遇到问题时可能不会直接沟通。'}},'INFP':{s:70,analysis:{overview:'理想与现实的碰撞，需要互相理解。',strengths:'INFP的温暖能融化INTJ的内心，INTJ的坚定能给INFP带来安全感。',challenges:'思维方式差异大，INTJ的直接可能伤害到敏感的INFP。'}},'ENFJ':{s:75,analysis:{overview:'一个规划，一个执行，高效的互补。',strengths:'ENFJ的社交能力和INTJ的战略眼光能形成强大合力。',challenges:'ENFJ需要情感回应，而INTJ可能不擅长此道。'}},'ENFP':{s:98,analysis:{overview:'天作之合，灵感与深度的完美互补。',strengths:'ENFP的活力和创意点燃INTJ的激情，INTJ的深度和规划给ENFP指引。',challenges:'ENFP的随性可能挑战INTJ的计划性，需要互相适应节奏。'}},'ISTJ':{s:60,analysis:{overview:'一个重理论，一个重事实，需要磨合。',strengths:'双方都非常可靠和有责任心。',challenges:'ISTJ的传统和INTJ的革新思想可能产生冲突。'}},'ISFJ':{s:50,analysis:{overview:'价值观差异大，沟通是关键。',strengths:'ISFJ的关怀能为INTJ提供温暖的港湾。',challenges:'INTJ可能觉得ISFJ过于关注细节和传统，缺乏远见。'}},'ESTJ':{s:65,analysis:{overview:'目标导向，但方式方法可能不同。',strengths:'都是高效的执行者，能共同完成目标。',challenges:'ESTJ的控制欲和INTJ的独立性可能产生摩擦。'}},'ESFJ':{s:55,analysis:{overview:'一个重逻辑，一个重情感，挑战较大。',strengths:'ESFJ能帮助INTJ更好地融入社交环境。',challenges:'INTJ的冷淡和批判性思维可能让ESFJ感到受伤。'}},'ISTP':{s:65,analysis:{overview:'冷静的观察者与战略家，可以合作。',strengths:'都非常独立，能给彼此足够的个人空间。',challenges:'情感交流可能非常少，关系容易变得疏远。'}},'ISFP':{s:55,analysis:{overview:'艺术与科学的碰撞，需要欣赏差异。',strengths:'ISFP的艺术感能为INTJ的生活增添色彩。',challenges:'INTJ的规划性和ISFP的随性生活方式难以调和。'}},'ESTP':{s:70,analysis:{overview:'冒险家与战略家，有趣的组合。',strengths:'ESTP的行动力能将INTJ的计划付诸实践。',challenges:'INTJ可能无法忍受ESTP的冲动和冒险行为。'}},'ESFP':{s:60,analysis:{overview:'活在当下与规划未来的矛盾。',strengths:'ESFP能带领INTJ体验生活的乐趣，放松紧绷的神经。',challenges:'价值观和生活重心差异巨大，长期相处挑战重重。'}}},
+            // ... Other personality types data ...
+            // For brevity, the rest of the compatibilityData is omitted, but it follows the same detailed structure.
+            'INTP':{'INTJ':{s:85,analysis:{overview:'智力上的高度共鸣，共同探索理论世界。',strengths:'永不枯竭的话题，互相欣赏对方的才智。',challenges:'双方都可能不擅长处理实际生活琐事，需要有人扮演更务实的角色。'}},'INTP':{s:75,analysis:{overview:'思想的海洋，但可能缺乏行动力。',strengths:'彼此能完全理解对方的思维模式，沟通无障碍。',challenges:'容易陷入纯理论探讨，缺乏将想法付诸实践的动力。'}},'ENTJ':{s:80,analysis:{overview:'指挥官与思想家的组合，潜力巨大。',strengths:'ENTJ能将INTP的想法变为现实，INTP为ENTJ提供战略洞察。',challenges:'ENTJ的强势可能会让INTP感到压力。'}},'ENTP':{s:95,analysis:{overview:'永不枯竭的智力辩论，最佳拍档。',strengths:'思维方式高度相似，充满乐趣和智力火花。',challenges:'双方都可能三分钟热度，难以坚持完成项目。'}},'INFJ':{s:75,analysis:{overview:'理解彼此的复杂内心，深度交流。',strengths:'INFJ能理解INTP的情感需求，INTP欣赏INFJ的深刻。',challenges:'INTP的纯逻辑可能偶尔会忽视INFJ的情感。'}},'INFP':{s:85,analysis:{overview:'充满想象力的组合，共同探索内心世界。',strengths:'共同的内向和直觉，能进行深度、有意义的交流。',challenges:'都比较随性，在责任和规划上需要加强。'}},'ENFJ':{s:70,analysis:{overview:'一个重人际，一个重理论，需要互补。',strengths:'ENFJ能将INTP带入社交，INTP为ENFJ提供理性分析。',challenges:'ENFJ可能觉得INTP不够热情，INTP可能觉得ENFJ过于情绪化。'}},'ENFP':{s:90,analysis:{overview:'充满创意和可能性的组合，非常有趣。',strengths:'共同探索新想法，生活充满乐趣和新奇。',challenges:'ENFP的社交需求和INTP的独处需求需要平衡。'}},'ISTJ':{s:70,analysis:{overview:'逻辑与事实的结合，可以很高效。',strengths:'ISTJ的务实能帮助INTP落地，INTP的创意能启发ISTJ。',challenges:'ISTJ可能觉得INTP不切实际，INTP觉得ISTJ过于刻板。'}},'ISFJ':{s:60,analysis:{overview:'需要耐心沟通，理解彼此的世界。',strengths:'ISFJ的关怀能给INTP提供稳定的后方。',challenges:'思维和关注点差异大，需要刻意地去理解对方。'}},'ESTJ':{s:75,analysis:{overview:'一个提供理论，一个付诸实践。',strengths:'高效的合作关系，能将想法转化为成果。',challenges:'ESTJ的传统和INTP的创新可能产生冲突。'}},'ESFJ':{s:55,analysis:{overview:'思维方式差异大，需要努力理解。',strengths:'ESFJ能帮助INTP处理人际关系。',challenges:'INTP的抽象思维和ESFJ的具象思维难以同步。'}},'ISTP':{s:80,analysis:{overview:'冷静的技术派组合，解决问题的好搭档。',strengths:'都热爱逻辑和分析，能一起解决技术难题。',challenges:'情感交流很少，关系可能过于平淡。'}},'ISFP':{s:65,analysis:{overview:'需要找到共同的兴趣点。',strengths:'ISFP的艺术感能为INTP的逻辑世界增添色彩。',challenges:'沟通上可能存在障碍，一个重感受，一个重逻辑。'}},'ESTP':{s:75,analysis:{overview:'一个思考，一个行动，充满活力。',strengths:'ESTP能将INTP从思考中拉出来去体验生活。',challenges:'INTP可能觉得ESTP肤浅，ESTP觉得INTP无趣。'}},'ESFP':{s:60,analysis:{overview:'需要找到共同的节奏。',strengths:'ESFP的活力能感染INTP。',challenges:'生活方式和价值观差异巨大。'}}},
+            'ENTJ':{'INTJ':{s:90,analysis:{overview:'强强联手，目标一致的权力组合。',strengths:'共同的野心和高效的执行力，能共同成就大业。',challenges:'关系中可能充满竞争，需要学会妥协和示弱。'}},'INTP':{s:80,analysis:{overview:'指挥官与思想家的组合，潜力巨大。',strengths:'ENTJ能将INTP的想法变为现实，INTP为ENTJ提供战略洞察。',challenges:'ENTJ的强势可能会让INTP感到压力。'}},'ENTJ':{s:75,analysis:{overview:'高效但可能缺乏灵活性，注意权力斗争。',strengths:'目标一致，行动力强，效率极高。',challenges:'双方都非常强势，容易因为控制权而产生冲突。'}},'ENTP':{s:85,analysis:{overview:'充满活力的组合，共同创造与挑战。',strengths:'共同的创新精神，能一起开拓新领域。',challenges:'ENTP的随性可能打乱ENTJ的计划。'}},'INFJ':{s:95,analysis:{overview:'愿景与执行力的完美结合，理想的伴侣。',strengths:'INFJ的深刻洞察力能帮助ENTJ更好地理解人性，ENTJ的行动力能实现INFJ的理想。',challenges:'ENTJ需要学习关注INFJ的情感需求。'}},'INFP':{s:70,analysis:{overview:'一个务实，一个理想，需要互相扶持。',strengths:'ENTJ能帮助INFP实现理想，INFP能软化ENTJ。',challenges:'ENTJ的直接可能伤害INFP的感情。'}},'ENFJ':{s:85,analysis:{overview:'天生的领导者组合，共同影响世界。',strengths:'共同的领导才能和魅力，能吸引众多追随者。',challenges:'需要明确分工，避免权力冲突。'}},'ENFP':{s:75,analysis:{overview:'一个规划，一个探索，可以互补。',strengths:'ENFP的创意能给ENTJ带来新思路。',challenges:'ENTJ需要给ENFP足够的自由。'}},'ISTJ':{s:80,analysis:{overview:'可靠的执行者与领导者，非常高效。',strengths:'ISTJ的可靠和ENTJ的领导力是成功的保证。',challenges:'ENTJ的创新可能受到ISTJ的传统思想的阻碍。'}},'ISFJ':{s:65,analysis:{overview:'需要更多地关注情感需求。',strengths:'ISFJ能提供ENTJ需要的情感支持和稳定的家庭环境。',challenges:'ENTJ可能忽视ISFJ的付出和情感。'}},'ESTJ':{s:90,analysis:{overview:'天生的管理者组合，效率极高。',strengths:'价值观和工作方式高度一致，是事业上的好伙伴。',challenges:'生活中可能缺乏浪漫和情感交流。'}},'ESFJ':{s:70,analysis:{overview:'共同关注组织和人，但方式不同。',strengths:'都能很好地处理人际关系，建立和谐的社交圈。',challenges:'ENTJ的野心和ESFJ的安于现状可能产生矛盾。'}},'ISTP':{s:75,analysis:{overview:'行动派与领导者的结合，解决实际问题。',strengths:'ISTP的动手能力和ENTJ的组织能力能解决任何实际问题。',challenges:'ISTP的自由散漫可能让ENTJ头疼。'}},'ISFP':{s:60,analysis:{overview:'价值观和生活方式差异较大。',strengths:'ISFP的艺术气息能为ENTJ的生活带来不同色彩。',challenges:'ENTJ的控制欲和ISFP对自由的渴望是主要矛盾。'}},'ESTP':{s:80,analysis:{overview:'充满活力的实干家组合。',strengths:'都是行动派，能共同面对挑战，享受生活。',challenges:'双方都比较冲动，需要有人更冷静地思考。'}},'ESFP':{s:65,analysis:{overview:'一个重未来，一个重当下，需要协调。',strengths:'ESFP的乐观能感染ENTJ。',challenges:'ENTJ的长期规划和ESFP的活在当下难以统一。'}}},
+            'ENTP':{'INTJ':{s:95,analysis:{overview:'思维的火花不断，充满挑战与乐趣。',strengths:'ENTP带来新奇想法，INTJ负责规划实现，完美互补。',challenges:'INTJ可能对ENTP的随性感到不安，需要建立信任。'}},'INTP':{s:95,analysis:{overview:'永不枯竭的智力辩论，最佳拍档。',strengths:'思维方式高度相似，充满乐趣和智力火花。',challenges:'双方都可能三分钟热度，难以坚持完成项目。'}},'ENTJ':{s:85,analysis:{overview:'充满活力的组合，共同创造与挑战。',strengths:'共同的创新精神，能一起开拓新领域。',challenges:'ENTP的随性可能打乱ENTJ的计划。'}},'ENTP':{s:75,analysis:{overview:'火花四溅，但可能缺乏焦点和执行。',strengths:'在一起永远不会无聊，总有新点子。',challenges:'关系可能不稳定，缺乏长远规划和责任感。'}},'INFJ':{s:98,analysis:{overview:'深刻的理解与无限的探索，灵魂之交。',strengths:'INFJ的深度能吸引ENTP，ENTP的广度能开拓INFJ的视野。',challenges:'ENTP的辩论天性可能无意中伤害到敏感的INFJ。'}},'INFP':{s:90,analysis:{overview:'充满创意和可能性的组合，非常有趣。',strengths:'共同的创造力和想象力，能一起创造美好的事物。',challenges:'ENTP需要注意言辞，避免伤害INFP的感情。'}},'ENFJ':{s:80,analysis:{overview:'一个关注可能性，一个关注人，互补。',strengths:'ENFJ能帮助ENTP更好地理解他人情感。',challenges:'ENTP的批判精神可能让ENFJ感到不适。'}},'ENFP':{s:90,analysis:{overview:'创意无限的组合，生活充满乐趣。',strengths:'都是外向、直觉型，能一起探索世界，享受生活。',challenges:'双方都比较随性，可能缺乏稳定性。'}},'ISTJ':{s:60,analysis:{overview:'思维方式差异大，需要互相尊重。',strengths:'ISTJ的稳定性可以中和ENTP的跳脱。',challenges:'ENTP觉得ISTJ无趣，ISTJ觉得ENTP不靠谱。'}},'ISFJ':{s:55,analysis:{overview:'一个爱辩论，一个求和谐，挑战大。',strengths:'ISFJ的关怀能给ENTP带来温暖。',challenges:'ENTP的辩论欲望和ISFJ的避免冲突是主要矛盾。'}},'ESTJ':{s:65,analysis:{overview:'一个挑战规则，一个维护规则。',strengths:'可以互相学习对方的优点。',challenges:'价值观冲突明显，ENTP挑战权威，ESTJ维护权威。'}},'ESFJ':{s:60,analysis:{overview:'需要更多地理解对方的动机。',strengths:'ESFJ的社交能力能为ENTP提供平台。',challenges:'ENTP可能觉得ESFJ肤浅，ESFJ觉得ENTP难以捉摸。'}},'ISTP':{s:80,analysis:{overview:'充满活力的探索者组合。',strengths:'都是灵活、适应性强的类型，能一起冒险。',challenges:'情感交流较少，需要有意识地培养。'}},'ISFP':{s:70,analysis:{overview:'一个探索思想，一个探索体验。',strengths:'ISFP的艺术感能给ENTP带来新的灵感。',challenges:'ENTP的抽象和ISFP的具象需要找到结合点。'}},'ESTP':{s:85,analysis:{overview:'最佳的冒险和挑战伙伴。',strengths:'都是行动派和冒险家，生活充满刺激。',challenges:'关系可能不稳定，双方都需要更多的责任感。'}},'ESFP':{s:75,analysis:{overview:'充满乐趣和新奇体验的组合。',strengths:'在一起总能找到乐子，是派对的焦点。',challenges:'可能都比较冲动，缺乏对未来的规划。'}}},
+            'INFJ':{'INTJ':{s:80,analysis:{overview:'深层的情感与思想交流，灵魂伴侣。',strengths:'彼此都能理解对方复杂的内心世界，情感连接深刻。',challenges:'都倾向于内省，遇到问题时可能不会直接沟通。'}},'INTP':{s:75,analysis:{overview:'理解彼此的复杂内心，深度交流。',strengths:'INFJ能理解INTP的情感需求，INTP欣赏INFJ的深刻。',challenges:'INTP的纯逻辑可能偶尔会忽视INFJ的情感。'}},'ENTJ':{s:95,analysis:{overview:'愿景与执行力的完美结合，理想的伴侣。',strengths:'INFJ的深刻洞察力能帮助ENTJ更好地理解人性，ENTJ的行动力能实现INFJ的理想。',challenges:'ENTJ需要学习关注INFJ的情感需求。'}},'ENTP':{s:98,analysis:{overview:'深刻的理解与无限的探索，灵魂之交。',strengths:'INFJ的深度能吸引ENTP，ENTP的广度能开拓INFJ的视野。',challenges:'ENTP的辩论天性可能无意中伤害到敏感的INFJ。'}},'INFJ':{s:75,analysis:{overview:'高度共鸣，但需警惕共同的理想化。',strengths:'能达到灵魂层面的深刻理解和共鸣。',challenges:'双方都过于理想主义，可能难以应对现实的残酷。'}},'INFP':{s:85,analysis:{overview:'理想主义的伙伴，共同追求美好。',strengths:'共同的价值观和理想，能互相支持，追求梦想。',challenges:'都比较敏感，容易陷入负面情绪。'}},'ENFJ':{s:90,analysis:{overview:'天生的盟友，共同为理想奋斗。',strengths:'高度的共情和理解，能建立非常牢固的情感纽带。',challenges:'双方都可能过度为对方付出而忽视自己。'}},'ENFP':{s:95,analysis:{overview:'充满温暖和理解的深度关系。',strengths:'ENFP的乐观能照亮INFJ的内心，INFJ的深度能给ENFP带来稳定感。',challenges:'INFJ的计划性可能与ENFP的随性产生冲突。'}},'ISTJ':{s:55,analysis:{overview:'价值观和沟通方式差异大。',strengths:'ISTJ的务实能帮助INFJ更好地适应现实。',challenges:'INFJ的理想主义可能被ISTJ视为不切实际。'}},'ISFJ':{s:70,analysis:{overview:'共同关心他人，但方式不同。',strengths:'都是富有同情心的关怀者，能互相温暖。',challenges:'INFJ重未来，ISFJ重过去，关注点不同。'}},'ESTJ':{s:60,analysis:{overview:'一个重理想，一个重现实，需要磨合。',strengths:'ESTJ的行动力能帮助INFJ实现目标。',challenges:'ESTJ的强势和INFJ的敏感是主要矛盾。'}},'ESFJ':{s:75,analysis:{overview:'共同的人本主义关怀，可以和谐相处。',strengths:'都能关心他人，建立和谐的家庭氛围。',challenges:'INFJ需要深度交流，而ESFJ更关注日常。'}},'ISTP':{s:50,analysis:{overview:'世界观差异较大，沟通困难。',strengths:'ISTP的冷静可以平衡INFJ的情绪化。',challenges:'INFJ的情感需求很难从ISTP那里得到满足。'}},'ISFP':{s:65,analysis:{overview:'艺术与理想的结合，可以很美。',strengths:'共同的内向和情感，能理解彼此的感受。',challenges:'都比较被动，关系进展可能缓慢。'}},'ESTP':{s:55,analysis:{overview:'一个深思熟虑，一个活在当下。',strengths:'ESTP的活力能带动INFJ体验生活。',challenges:'价值观和生活节奏差异巨大。'}},'ESFP':{s:60,analysis:{overview:'需要找到共同的生活节奏和目标。',strengths:'ESFP的快乐能感染INFJ。',challenges:'INFJ的深度和ESFP的广度难以调和。'}}},
+            'INFP':{'INTJ':{s:70,analysis:{overview:'理想与现实的碰撞，需要互相理解。',strengths:'INFP的温暖能融化INTJ的内心，INTJ的坚定能给INFP带来安全感。',challenges:'思维方式差异大，INTJ的直接可能伤害到敏感的INFP。'}},'INTP':{s:85,analysis:{overview:'充满想象力的组合，共同探索内心世界。',strengths:'共同的内向和直觉，能进行深度、有意义的交流。',challenges:'都比较随性，在责任和规划上需要加强。'}},'ENTJ':{s:70,analysis:{overview:'一个务实，一个理想，需要互相扶持。',strengths:'ENTJ能帮助INFP实现理想，INFP能软化ENTJ。',challenges:'ENTJ的直接可能伤害INFP的感情。'}},'ENTP':{s:90,analysis:{overview:'充满创意和可能性的组合，非常有趣。',strengths:'共同的创造力和想象力，能一起创造美好的事物。',challenges:'ENTP需要注意言辞，避免伤害INFP的感情。'}},'INFJ':{s:85,analysis:{overview:'理想主义的伙伴，共同追求美好。',strengths:'共同的价值观和理想，能互相支持，追求梦想。',challenges:'都比较敏感，容易陷入负面情绪。'}},'INFP':{s:75,analysis:{overview:'深刻的情感共鸣，但可能脱离现实。',strengths:'能达到灵魂伴侣级别的理解和共情。',challenges:'双方都可能过于情绪化，难以解决实际问题。'}},'ENFJ':{s:95,analysis:{overview:'完美的互补，共同成长和关怀。',strengths:'ENFJ能引导和支持INFP，INFP的真诚能打动ENFJ。',challenges:'INFP需要学会更直接地表达需求。'}},'ENFP':{s:98,analysis:{overview:'灵魂伴侣，充满理解、温暖和乐趣。',strengths:'高度的共情和相似的价值观，关系充满乐趣和深度。',challenges:'都比较情绪化，需要学会共同面对现实挑战。'}},'ISTJ':{s:60,analysis:{overview:'一个重情感，一个重事实，需要耐心。',strengths:'ISTJ的稳定能给INFP带来安全感。',challenges:'INFP的理想主义和ISTJ的现实主义难以调和。'}},'ISFJ':{s:75,analysis:{overview:'温柔的组合，互相支持和理解。',strengths:'都是温柔的关怀者，能提供情感支持。',challenges:'INFP的想象力和ISFJ的传统可能产生分歧。'}},'ESTJ':{s:55,analysis:{overview:'价值观冲突较大，需要努力。',strengths:'ESTJ能帮助INFP变得更有效率。',challenges:'INFP觉得ESTJ太专制，ESTJ觉得INFP太敏感。'}},'ESFJ':{s:80,analysis:{overview:'充满关怀和温暖的和谐关系。',strengths:'ESFJ的关怀能满足INFP的情感需求。',challenges:'INFP的深度和ESFJ的广度需要找到平衡。'}},'ISTP':{s:60,analysis:{overview:'需要找到共同的语言。',strengths:'ISTP的冷静能帮助INFP稳定情绪。',challenges:'情感需求和沟通方式差异大。'}},'ISFP':{s:85,analysis:{overview:'艺术和情感的完美结合。',strengths:'都是内向情感型，能深刻理解对方。',challenges:'都比较被动，需要有人主动推动关系。'}},'ESTP':{s:65,analysis:{overview:'一个内向，一个外向，需要协调。',strengths:'ESTP能带INFP体验世界，INFP能带给ESTP深度。',challenges:'生活节奏和价值观差异较大。'}},'ESFP':{s:80,analysis:{overview:'共同享受生活的美好和乐趣。',strengths:'都是活在当下的享乐主义者，能一起创造快乐。',challenges:'可能都缺乏长远规划。'}}},
+            'ENFJ':{'INTJ':{s:75,analysis:{overview:'一个规划，一个执行，高效的互补。',strengths:'ENFJ的社交能力和INTJ的战略眼光能形成强大合力。',challenges:'ENFJ需要情感回应，而INTJ可能不擅长此道。'}},'INTP':{s:70,analysis:{overview:'一个重人际，一个重理论，需要互补。',strengths:'ENFJ能将INTP带入社交，INTP为ENFJ提供理性分析。',challenges:'ENFJ可能觉得INTP不够热情，INTP可能觉得ENFJ过于情绪化。'}},'ENTJ':{s:85,analysis:{overview:'天生的领导者组合，共同影响世界。',strengths:'共同的领导才能和魅力，能吸引众多追随者。',challenges:'需要明确分工，避免权力冲突。'}},'ENTP':{s:80,analysis:{overview:'一个关注可能性，一个关注人，互补。',strengths:'ENFJ能帮助ENTP更好地理解他人情感。',challenges:'ENTP的批判精神可能让ENFJ感到不适。'}},'INFJ':{s:90,analysis:{overview:'天生的盟友，共同为理想奋斗。',strengths:'高度的共情和理解，能建立非常牢固的情感纽带。',challenges:'双方都可能过度为对方付出而忽视自己。'}},'INFP':{s:95,analysis:{overview:'完美的互补，共同成长和关怀。',strengths:'ENFJ能引导和支持INFP，INFP的真诚能打动ENFJ。',challenges:'INFP需要学会更直接地表达需求。'}},'ENFJ':{s:75,analysis:{overview:'充满正能量，但可能忽视实际问题。',strengths:'都是热情、有魅力的人，社交圈广泛。',challenges:'双方都可能过于在意他人看法，而失去自我。'}},'ENFP':{s:85,analysis:{overview:'充满热情和活力的组合，鼓舞人心。',strengths:'共同的外向和直觉，能一起探索和激励他人。',challenges:'都比较理想主义，需要关注现实。'}},'ISTJ':{s:65,analysis:{overview:'需要更多地理解对方的思维方式。',strengths:'ISTJ的可靠能给ENFJ带来稳定感。',challenges:'ENFJ可能觉得ISTJ缺乏热情和远见。'}},'ISFJ':{s:80,analysis:{overview:'充满关怀和责任感的组合。',strengths:'都是关怀者，能共同建立一个温暖的家庭。',challenges:'ENFJ的理想主义和ISFJ的传统主义可能冲突。'}},'ESTJ':{s:75,analysis:{overview:'共同的组织能力，但焦点不同。',strengths:'都是天生的组织者，能共同管理好家庭和事业。',challenges:'ENFJ重人情，ESTJ重规则，可能产生分歧。'}},'ESFJ':{s:85,analysis:{overview:'非常和谐的社交型组合。',strengths:'都是外向情感型，社交生活丰富多彩。',challenges:'可能都比较在意他人的看法，容易有压力。'}},'ISTP':{s:60,analysis:{overview:'一个重人，一个重物，需要找到共同点。',strengths:'ISTP的冷静能平衡ENFJ的热情。',challenges:'ENFJ的情感需求很难从ISTP处得到满足。'}},'ISFP':{s:80,analysis:{overview:'充满美感和关怀的组合。',strengths:'ENFJ能鼓励ISFP表达自己，ISFP的艺术能打动ENFJ。',challenges:'ISFP的被动和ENFJ的主动需要协调。'}},'ESTP':{s:70,analysis:{overview:'一个关注人际，一个关注行动。',strengths:'ESTP的活力能吸引ENFJ。',challenges:'ENFJ可能觉得ESTP不够认真，缺乏深度。'}},'ESFP':{s:85,analysis:{overview:'充满乐趣和社交活动的组合。',strengths:'都是派对的焦点，能一起享受生活。',challenges:'可能都比较冲动，缺乏长远规划。'}}},
+            'ENFP':{'INTJ':{s:98,analysis:{overview:'天作之合，灵感与深度的完美互补。',strengths:'ENFP的活力和创意点燃INTJ的激情，INTJ的深度和规划给ENFP指引。',challenges:'ENFP的随性可能挑战INTJ的计划性，需要互相适应节奏。'}},'INTP':{s:90,analysis:{overview:'充满创意和可能性的组合，非常有趣。',strengths:'共同探索新想法，生活充满乐趣和新奇。',challenges:'ENFP的社交需求和INTP的独处需求需要平衡。'}},'ENTJ':{s:75,analysis:{overview:'一个规划，一个探索，可以互补。',strengths:'ENFP的创意能给ENTJ带来新思路。',challenges:'ENTJ需要给ENFP足够的自由。'}},'ENTP':{s:90,analysis:{overview:'创意无限的组合，生活充满乐趣。',strengths:'都是外向、直觉型，能一起探索世界，享受生活。',challenges:'双方都比较随性，可能缺乏稳定性。'}},'INFJ':{s:95,analysis:{overview:'充满温暖和理解的深度关系。',strengths:'ENFP的乐观能照亮INFJ的内心，INFJ的深度能给ENFP带来稳定感。',challenges:'INFJ的计划性可能与ENFP的随性产生冲突。'}},'INFP':{s:98,analysis:{overview:'灵魂伴侣，充满理解、温暖和乐趣。',strengths:'高度的共情和相似的价值观，关系充满乐趣和深度。',challenges:'都比较情绪化，需要学会共同面对现实挑战。'}},'ENFJ':{s:85,analysis:{overview:'充满热情和活力的组合，鼓舞人心。',strengths:'共同的外向和直觉，能一起探索和激励他人。',challenges:'都比较理想主义，需要关注现实。'}},'ENFP':{s:75,analysis:{overview:'充满乐趣，但可能缺乏方向。',strengths:'在一起永远充满乐趣和新奇。',challenges:'双方都可能三分钟热度，需要共同培养责任感。'}},'ISTJ':{s:50,analysis:{overview:'非常不同的组合，沟通是巨大挑战。',strengths:'ISTJ的稳定能给ENFP一个停靠的港湾。',challenges:'ENFP觉得ISTJ无趣，ISTJ觉得ENFP不切实际。'}},'ISFJ':{s:65,analysis:{overview:'一个探索，一个守护，需要理解。',strengths:'ISFJ的关怀能给ENFP带来温暖和支持。',challenges:'ENFP的自由和ISFJ的传统是主要矛盾。'}},'ESTJ':{s:55,analysis:{overview:'一个自由，一个传统，冲突较大。',strengths:'ESTJ的规划能力可以帮助ENFP。',challenges:'ENFP觉得ESTJ过于专制，ESTJ觉得ENFP太散漫。'}},'ESFJ':{s:70,analysis:{overview:'可以和谐相处，但需关注深层需求。',strengths:'ESFJ的社交能力能为ENFP提供舞台。',challenges:'ENFP的探索欲和ESFJ的求稳需求可能冲突。'}},'ISTP':{s:65,analysis:{overview:'一个充满热情，一个冷静旁观。',strengths:'ISTP的冷静和ENFP的热情可以互补。',challenges:'沟通方式和关注点差异大。'}},'ISFP':{s:80,analysis:{overview:'共同探索生活的美好和新奇。',strengths:'都是灵活、感性的类型，能一起享受艺术和生活。',challenges:'都比较随性，可能缺乏长远规划。'}},'ESTP':{s:75,analysis:{overview:'充满冒险和乐趣的组合。',strengths:'都是行动派，能一起探索世界，享受刺激。',challenges:'关系可能缺乏深度和稳定性。'}},'ESFP':{s:85,analysis:{overview:'最佳的玩伴，生活充满阳光。',strengths:'都是外向、感性的享乐主义者，生活充满乐趣。',challenges:'可能都比较冲动，缺乏责任感。'}}},
+            'ISTJ':{'INTJ':{s:60,analysis:{overview:'一个重理论，一个重事实，需要磨合。',strengths:'双方都非常可靠和有责任心。',challenges:'ISTJ的传统和INTJ的革新思想可能产生冲突。'}},'INTP':{s:70,analysis:{overview:'逻辑与事实的结合，可以很高效。',strengths:'ISTJ的务实能帮助INTP落地，INTP的创意能启发ISTJ。',challenges:'ISTJ可能觉得INTP不切实际，INTP觉得ISTJ过于刻板。'}},'ENTJ':{s:80,analysis:{overview:'可靠的执行者与领导者，非常高效。',strengths:'ISTJ的可靠和ENTJ的领导力是成功的保证。',challenges:'ENTJ的创新可能受到ISTJ的传统思想的阻碍。'}},'ENTP':{s:60,analysis:{overview:'思维方式差异大，需要互相尊重。',strengths:'ISTJ的稳定性可以中和ENTP的跳脱。',challenges:'ENTP觉得ISTJ无趣，ISTJ觉得ENTP不靠谱。'}},'INFJ':{s:55,analysis:{overview:'价值观和沟通方式差异大。',strengths:'ISTJ的务实能帮助INFJ更好地适应现实。',challenges:'INFJ的理想主义可能被ISTJ视为不切实际。'}},'INFP':{s:60,analysis:{overview:'一个重情感，一个重事实，需要耐心。',strengths:'ISTJ的稳定能给INFP带来安全感。',challenges:'INFP的理想主义和ISTJ的现实主义难以调和。'}},'ENFJ':{s:65,analysis:{overview:'需要更多地理解对方的思维方式。',strengths:'ISTJ的可靠能给ENFJ带来稳定感。',challenges:'ENFJ可能觉得ISTJ缺乏热情和远见。'}},'ENFP':{s:50,analysis:{overview:'非常不同的组合，沟通是巨大挑战。',strengths:'ISTJ的稳定能给ENFP一个停靠的港湾。',challenges:'ENFP觉得ISTJ无趣，ISTJ觉得ENFP不切实际。'}},'ISTJ':{s:75,analysis:{overview:'非常稳定，但可能缺乏激情。',strengths:'价值观和生活方式高度一致，非常可靠。',challenges:'关系可能过于平淡，缺乏情感的火花。'}},'ISFJ':{s:85,analysis:{overview:'可靠的守护者组合，非常稳定。',strengths:'都是传统、有责任心的人，能共同建立稳定的家庭。',challenges:'可能都比较固执，不愿意改变。'}},'ESTJ':{s:95,analysis:{overview:'最可靠的伙伴，共同维护秩序。',strengths:'高度一致的价值观和工作方式，是完美的合作伙伴。',challenges:'生活中可能过于严肃，缺乏乐趣。'}},'ESFJ':{s:90,analysis:{overview:'非常和谐的传统型组合。',strengths:'都是关怀家庭、有责任心的人，能建立和谐的关系。',challenges:'ISTJ的内向和ESFJ的外向需要协调。'}},'ISTP':{s:80,analysis:{overview:'务实的实干家组合。',strengths:'都是务实、注重实际的人，能一起解决问题。',challenges:'情感交流都比较少，关系可能比较冷淡。'}},'ISFP':{s:70,analysis:{overview:'一个内敛，一个感性，需要沟通。',strengths:'ISFP的温柔能软化ISTJ。',challenges:'ISTJ的固执可能伤害ISFP的感情。'}},'ESTP':{s:65,analysis:{overview:'一个计划，一个行动，可以合作。',strengths:'ESTP的行动力能帮助ISTJ实现计划。',challenges:'ISTJ可能觉得ESTP太冲动，不靠谱。'}},'ESFP':{s:75,analysis:{overview:'一个负责，一个享乐，可以互补。',strengths:'ESFP能为ISTJ的生活带来乐趣，ISTJ能为ESFP带来稳定。',challenges:'生活方式和消费观可能差异巨大。'}}},
+            'ISFJ':{'INTJ':{s:50,analysis:{overview:'价值观差异大，沟通是关键。',strengths:'ISFJ的关怀能为INTJ提供温暖的港湾。',challenges:'INTJ可能觉得ISFJ过于关注细节和传统，缺乏远见。'}},'INTP':{s:60,analysis:{overview:'需要耐心沟通，理解彼此的世界。',strengths:'ISFJ的关怀能给INTP提供稳定的后方。',challenges:'思维和关注点差异大，需要刻意地去理解对方。'}},'ENTJ':{s:65,analysis:{overview:'需要更多地关注情感需求。',strengths:'ISFJ能提供ENTJ需要的情感支持和稳定的家庭环境。',challenges:'ENTJ可能忽视ISFJ的付出和情感。'}},'ENTP':{s:55,analysis:{overview:'一个爱辩论，一个求和谐，挑战大。',strengths:'ISFJ的关怀能给ENTP带来温暖。',challenges:'ENTP的辩论欲望和ISFJ的避免冲突是主要矛盾。'}},'INFJ':{s:70,analysis:{overview:'共同关心他人，但方式不同。',strengths:'都是富有同情心的关怀者，能互相温暖。',challenges:'INFJ重未来，ISFJ重过去，关注点不同。'}},'INFP':{s:75,analysis:{overview:'温柔的组合，互相支持和理解。',strengths:'都是温柔的关怀者，能提供情感支持。',challenges:'INFP的想象力和ISFJ的传统可能产生分歧。'}},'ENFJ':{s:80,analysis:{overview:'充满关怀和责任感的组合。',strengths:'都是关怀者，能共同建立一个温暖的家庭。',challenges:'ENFJ的理想主义和ISFJ的传统主义可能冲突。'}},'ENFP':{s:65,analysis:{overview:'一个探索，一个守护，需要理解。',strengths:'ISFJ的关怀能给ENFP带来温暖和支持。',challenges:'ENFP的自由和ISFJ的传统是主要矛盾。'}},'ISTJ':{s:85,analysis:{overview:'可靠的守护者组合，非常稳定。',strengths:'都是传统、有责任心的人，能共同建立稳定的家庭。',challenges:'可能都比较固执，不愿意改变。'}},'ISFJ':{s:75,analysis:{overview:'非常温暖，但可能缺乏新意。',strengths:'价值观和生活方式非常相似，关系和谐。',challenges:'双方都倾向于避免冲突，问题可能被掩盖。'}},'ESTJ':{s:90,analysis:{overview:'非常和谐的传统型组合。',strengths:'都是有责任心的守护者，能共同建立稳定的家庭。',challenges:'ESTJ的强势可能会让ISFJ感到压力。'}},'ESFJ':{s:95,analysis:{overview:'最佳的关怀者组合，充满温暖。',strengths:'高度的共情和相似的价值观，能建立非常温暖和谐的关系。',challenges:'可能都过于在意他人的看法。'}},'ISTP':{s:70,analysis:{overview:'一个提供温暖，一个提供冷静。',strengths:'ISFJ的温暖能融化ISTP，ISTP的冷静能帮助ISFJ。',challenges:'沟通方式差异大，需要互相适应。'}},'ISFP':{s:85,analysis:{overview:'充满关怀和美感的组合。',strengths:'都是内向、感性的关怀者，能互相理解和支持。',challenges:'都比较被动，需要有人主动。'}},'ESTP':{s:75,analysis:{overview:'一个守护，一个冒险，有趣的互补。',strengths:'ESTP能带ISFJ体验新事物，ISFJ能为ESTP提供稳定的港湾。',challenges:'ISFJ的求稳和ESTP的爱冒险是主要矛盾。'}},'ESFP':{s:90,analysis:{overview:'充满爱与欢乐的组合。',strengths:'都是热情、有爱心的人，能共同享受生活。',challenges:'ISFJ的计划性可能和ESFP的随性冲突。'}}},
+            'ESTJ':{'INTJ':{s:65,analysis:{overview:'目标导向，但方式方法可能不同。',strengths:'都是高效的执行者，能共同完成目标。',challenges:'ESTJ的控制欲和INTJ的独立性可能产生摩擦。'}},'INTP':{s:75,analysis:{overview:'一个提供理论，一个付诸实践。',strengths:'高效的合作关系，能将想法转化为成果。',challenges:'ESTJ的传统和INTP的创新可能产生冲突。'}},'ENTJ':{s:90,analysis:{overview:'天生的管理者组合，效率极高。',strengths:'价值观和工作方式高度一致，是事业上的好伙伴。',challenges:'生活中可能缺乏浪漫和情感交流。'}},'ENTP':{s:65,analysis:{overview:'一个挑战规则，一个维护规则。',strengths:'可以互相学习对方的优点。',challenges:'价值观冲突明显，ENTP挑战权威，ESTJ维护权威。'}},'INFJ':{s:60,analysis:{overview:'一个重理想，一个重现实，需要磨合。',strengths:'ESTJ的行动力能帮助INFJ实现目标。',challenges:'ESTJ的强势和INFJ的敏感是主要矛盾。'}},'INFP':{s:55,analysis:{overview:'价值观冲突较大，需要努力。',strengths:'ESTJ能帮助INFP变得更有效率。',challenges:'INFP觉得ESTJ太专制，ESTJ觉得INFP太敏感。'}},'ENFJ':{s:75,analysis:{overview:'共同的组织能力，但焦点不同。',strengths:'都是天生的组织者，能共同管理好家庭和事业。',challenges:'ENFJ重人情，ESTJ重规则，可能产生分歧。'}},'ENFP':{s:55,analysis:{overview:'一个自由，一个传统，冲突较大。',strengths:'ESTJ的规划能力可以帮助ENFP。',challenges:'ENFP觉得ESTJ过于专制，ESTJ觉得ENFP太散漫。'}},'ISTJ':{s:95,analysis:{overview:'最可靠的伙伴，共同维护秩序。',strengths:'高度一致的价值观和工作方式，是完美的合作伙伴。',challenges:'生活中可能过于严肃，缺乏乐趣。'}},'ISFJ':{s:90,analysis:{overview:'非常和谐的传统型组合。',strengths:'都是有责任心的守护者，能共同建立稳定的家庭。',challenges:'ESTJ的强势可能会让ISFJ感到压力。'}},'ESTJ':{s:75,analysis:{overview:'效率至上，但可能缺乏情感交流。',strengths:'都是高效、有责任心的人，能共同建立稳定的生活。',challenges:'双方都比较固执，容易在意见不合时产生冲突。'}},'ESFJ':{s:85,analysis:{overview:'共同维护社区和家庭的稳定。',strengths:'都是有责任心的社会中坚，能共同建立和谐的家庭。',challenges:'ESTJ可能觉得ESFJ过于情绪化。'}},'ISTP':{s:85,analysis:{overview:'非常务实的实干家组合。',strengths:'都是注重实际、解决问题的高手。',challenges:'情感交流可能较少。'}},'ISFP':{s:70,analysis:{overview:'一个重现实，一个重体验。',strengths:'ISFP的灵活性可以中和ESTJ的固执。',challenges:'ESTJ的控制欲和ISFP的自由需求是矛盾。'}},'ESTP':{s:80,analysis:{overview:'行动力超强的组合。',strengths:'都是务实的行动派，能共同面对挑战。',challenges:'都比较强势，容易产生冲突。'}},'ESFP':{s:75,analysis:{overview:'一个组织，一个享乐，可以互补。',strengths:'ESFP能让ESTJ放松，ESTJ能让ESFP更有条理。',challenges:'消费观和生活方式可能差异大。'}}},
+            'ESFJ':{'INTJ':{s:55,analysis:{overview:'一个重逻辑，一个重情感，挑战较大。',strengths:'ESFJ能帮助INTJ更好地融入社交环境。',challenges:'INTJ的冷淡和批判性思维可能让ESFJ感到受伤。'}},'INTP':{s:55,analysis:{overview:'思维方式差异大，需要努力理解。',strengths:'ESFJ能帮助INTP处理人际关系。',challenges:'INTP的抽象思维和ESFJ的具象思维难以同步。'}},'ENTJ':{s:70,analysis:{overview:'共同关注组织和人，但方式不同。',strengths:'都能很好地处理人际关系，建立和谐的社交圈。',challenges:'ENTJ的野心和ESFJ的安于现状可能产生矛盾。'}},'ENTP':{s:60,analysis:{overview:'需要更多地理解对方的动机。',strengths:'ESFJ的社交能力能为ENTP提供平台。',challenges:'ENTP可能觉得ESFJ肤浅，ESFJ觉得ENTP难以捉摸。'}},'INFJ':{s:75,analysis:{overview:'共同的人本主义关怀，可以和谐相处。',strengths:'都能关心他人，建立和谐的家庭氛围。',challenges:'INFJ需要深度交流，而ESFJ更关注日常。'}},'INFP':{s:80,analysis:{overview:'充满关怀和温暖的和谐关系。',strengths:'ESFJ的关怀能满足INFP的情感需求。',challenges:'INFP的深度和ESFJ的广度需要找到平衡。'}},'ENFJ':{s:85,analysis:{overview:'非常和谐的社交型组合。',strengths:'都是外向情感型，社交生活丰富多彩。',challenges:'可能都比较在意他人的看法，容易有压力。'}},'ENFP':{s:70,analysis:{overview:'可以和谐相处，但需关注深层需求。',strengths:'ESFJ的社交能力能为ENFP提供舞台。',challenges:'ENFP的探索欲和ESFJ的求稳需求可能冲突。'}},'ISTJ':{s:90,analysis:{overview:'非常和谐的传统型组合。',strengths:'都是关怀家庭、有责任心的人，能建立和谐的关系。',challenges:'ISTJ的内向和ESFJ的外向需要协调。'}},'ISFJ':{s:95,analysis:{overview:'最佳的关怀者组合，充满温暖。',strengths:'高度的共情和相似的价值观，能建立非常温暖和谐的关系。',challenges:'可能都过于在意他人的看法。'}},'ESTJ':{s:85,analysis:{overview:'共同维护社区和家庭的稳定。',strengths:'都是有责任心的社会中坚，能共同建立和谐的家庭。',challenges:'ESTJ可能觉得ESFJ过于情绪化。'}},'ESFJ':{s:75,analysis:{overview:'非常和谐，但可能害怕冲突。',strengths:'都是热情的社交家，能共同建立和谐的社交生活。',challenges:'双方都倾向于避免冲突，可能导致问题积压。'}},'ISTP':{s:80,analysis:{overview:'一个提供关怀，一个提供行动。',strengths:'ESFJ的温暖和ISTP的冷静可以互补。',challenges:'沟通方式差异大，需要互相适应。'}},'ISFP':{s:90,analysis:{overview:'充满爱与欢乐的组合。',strengths:'都是感性、有爱心的人，能互相理解和支持。',challenges:'ESFJ的社交需求和ISFP的独处需求需要平衡。'}},'ESTP':{s:85,analysis:{overview:'社交达人组合，生活丰富多彩。',strengths:'都是外向、爱社交的人，生活充满乐趣。',challenges:'都比较注重当下的感受，可能缺乏长远规划。'}},'ESFP':{s:95,analysis:{overview:'最佳的社交和享乐伙伴。',strengths:'高度相似的价值观和生活方式，能一起享受生活。',challenges:'可能都比较冲动，需要有人更理性地思考。'}}},
+            'ISTP':{'INTJ':{s:65,analysis:{overview:'冷静的观察者与战略家，可以合作。',strengths:'都非常独立，能给彼此足够的个人空间。',challenges:'情感交流可能非常少，关系容易变得疏远。'}},'INTP':{s:80,analysis:{overview:'冷静的技术派组合，解决问题的好搭档。',strengths:'都热爱逻辑和分析，能一起解决技术难题。',challenges:'情感交流很少，关系可能过于平淡。'}},'ENTJ':{s:75,analysis:{overview:'行动派与领导者的结合，解决实际问题。',strengths:'ISTP的动手能力和ENTJ的组织能力能解决任何实际问题。',challenges:'ISTP的自由散漫可能让ENTJ头疼。'}},'ENTP':{s:80,analysis:{overview:'充满活力的探索者组合。',strengths:'都是灵活、适应性强的类型，能一起冒险。',challenges:'情感交流较少，需要有意识地培养。'}},'INFJ':{s:50,analysis:{overview:'世界观差异较大，沟通困难。',strengths:'ISTP的冷静可以平衡INFJ的情绪化。',challenges:'INFJ的情感需求很难从ISTP那里得到满足。'}},'INFP':{s:60,analysis:{overview:'需要找到共同的语言。',strengths:'ISTP的冷静能帮助INFP稳定情绪。',challenges:'情感需求和沟通方式差异大。'}},'ENFJ':{s:60,analysis:{overview:'一个重人，一个重物，需要找到共同点。',strengths:'ISTP的冷静能平衡ENFJ的热情。',challenges:'ENFJ的情感需求很难从ISTP处得到满足。'}},'ENFP':{s:65,analysis:{overview:'一个充满热情，一个冷静旁观。',strengths:'ISTP的冷静和ENFP的热情可以互补。',challenges:'沟通方式和关注点差异大。'}},'ISTJ':{s:80,analysis:{overview:'务实的实干家组合。',strengths:'都是务实、注重实际的人，能一起解决问题。',challenges:'情感交流都比较少，关系可能比较冷淡。'}},'ISFJ':{s:70,analysis:{overview:'一个提供温暖，一个提供冷静。',strengths:'ISFJ的温暖能融化ISTP，ISTP的冷静能帮助ISFJ。',challenges:'沟通方式差异大，需要互相适应。'}},'ESTJ':{s:85,analysis:{overview:'非常务实的实干家组合。',strengths:'都是注重实际、解决问题的高手。',challenges:'情感交流可能较少。'}},'ESFJ':{s:80,analysis:{overview:'一个提供关怀，一个提供行动。',strengths:'ESFJ的温暖和ISTP的冷静可以互补。',challenges:'沟通方式差异大，需要互相适应。'}},'ISTP':{s:75,analysis:{overview:'独立的行动派，需要个人空间。',strengths:'互相理解对方对自由和独立的需求。',challenges:'关系可能缺乏情感的深度和粘性。'}},'ISFP':{s:85,analysis:{overview:'共同的动手能力，可以一起创造。',strengths:'都是内向、感性的实干家，能一起动手创造。',challenges:'都比较内敛，需要有人主动发起沟通。'}},'ESTP':{s:95,analysis:{overview:'最佳的冒险伙伴，行动力爆表。',strengths:'都是追求刺激和体验的行动派，生活充满冒险。',challenges:'双方都比较冲动，需要有人扮演更成熟的角色。'}},'ESFP':{s:90,analysis:{overview:'共同享受刺激和感官体验。',strengths:'都是活在当下的享乐主义者，能一起寻找乐趣。',challenges:'可能都缺乏对未来的规划。'}}},
+            'ISFP':{'INTJ':{s:55,analysis:{overview:'艺术与科学的碰撞，需要欣赏差异。',strengths:'ISFP的艺术感能为INTJ的生活增添色彩。',challenges:'INTJ的规划性和ISFP的随性生活方式难以调和。'}},'INTP':{s:65,analysis:{overview:'需要找到共同的兴趣点。',strengths:'ISFP的艺术感能为INTP的逻辑世界增添色彩。',challenges:'沟通上可能存在障碍，一个重感受，一个重逻辑。'}},'ENTJ':{s:60,analysis:{overview:'价值观和生活方式差异较大。',strengths:'ISFP的艺术气息能为ENTJ的生活带来不同色彩。',challenges:'ENTJ的控制欲和ISFP对自由的渴望是主要矛盾。'}},'ENTP':{s:70,analysis:{overview:'一个探索思想，一个探索体验。',strengths:'ISFP的艺术感能给ENTP带来新的灵感。',challenges:'ENTP的抽象和ISFP的具象需要找到结合点。'}},'INFJ':{s:65,analysis:{overview:'艺术与理想的结合，可以很美。',strengths:'共同的内向和情感，能理解彼此的感受。',challenges:'都比较被动，关系进展可能缓慢。'}},'INFP':{s:85,analysis:{overview:'艺术和情感的完美结合。',strengths:'都是内向情感型，能深刻理解对方。',challenges:'都比较被动，需要有人主动推动关系。'}},'ENFJ':{s:80,analysis:{overview:'充满美感和关怀的组合。',strengths:'ENFJ能鼓励ISFP表达自己，ISFP的艺术能打动ENFJ。',challenges:'ISFP的被动和ENFJ的主动需要协调。'}},'ENFP':{s:80,analysis:{overview:'共同探索生活的美好和新奇。',strengths:'都是灵活、感性的类型，能一起享受艺术和生活。',challenges:'都比较随性，可能缺乏长远规划。'}},'ISTJ':{s:70,analysis:{overview:'一个内敛，一个感性，需要沟通。',strengths:'ISTJ的稳定能给ISFP带来安全感。',challenges:'ISTJ的固执可能伤害ISFP的感情。'}},'ISFJ':{s:85,analysis:{overview:'充满关怀和美感的组合。',strengths:'都是内向、感性的关怀者，能互相理解和支持。',challenges:'都比较被动，需要有人主动。'}},'ESTJ':{s:70,analysis:{overview:'一个重现实，一个重体验。',strengths:'ISFP的灵活性可以中和ESTJ的固执。',challenges:'ESTJ的控制欲和ISFP的自由需求是矛盾。'}},'ESFJ':{s:90,analysis:{overview:'充满爱与欢乐的组合。',strengths:'都是感性、有爱心的人，能互相理解和支持。',challenges:'ESFJ的社交需求和ISFP的独处需求需要平衡。'}},'ISTP':{s:85,analysis:{overview:'共同的动手能力，可以一起创造。',strengths:'都是内向、感性的实干家，能一起动手创造。',challenges:'都比较内敛，需要有人主动发起沟通。'}},'ISFP':{s:75,analysis:{overview:'温柔的艺术家组合，需要互相鼓励。',strengths:'能互相理解对方的艺术追求和情感世界。',challenges:'双方都可能过于敏感，容易受伤。'}},'ESTP':{s:90,analysis:{overview:'共同追求感官刺激和美好体验。',strengths:'都是注重感官体验的行动派，能一起享受生活。',challenges:'都比较活在当下，可能缺乏长远规划。'}},'ESFP':{s:98,analysis:{overview:'天生的玩伴和艺术家，生活充满色彩。',strengths:'高度相似的价值观和生活方式，是完美的享乐伙伴。',challenges:'关系可能缺乏深度，需要有意识地进行情感交流。'}}},
+            'ESTP':{'INTJ':{s:70,analysis:{overview:'冒险家与战略家，有趣的组合。',strengths:'ESTP的行动力能将INTJ的计划付诸实践。',challenges:'INTJ可能无法忍受ESTP的冲动和冒险行为。'}},'INTP':{s:75,analysis:{overview:'一个思考，一个行动，充满活力。',strengths:'ESTP能将INTP从思考中拉出来去体验生活。',challenges:'INTP可能觉得ESTP肤浅，ESTP觉得INTP无趣。'}},'ENTJ':{s:80,analysis:{overview:'充满活力的实干家组合。',strengths:'都是行动派，能共同面对挑战，享受生活。',challenges:'双方都比较冲动，需要有人更冷静地思考。'}},'ENTP':{s:85,analysis:{overview:'最佳的冒险和挑战伙伴。',strengths:'都是行动派和冒险家，生活充满刺激。',challenges:'关系可能不稳定，双方都需要更多的责任感。'}},'INFJ':{s:55,analysis:{overview:'一个深思熟虑，一个活在当下。',strengths:'ESTP的活力能带动INFJ体验生活。',challenges:'价值观和生活节奏差异巨大。'}},'INFP':{s:65,analysis:{overview:'一个内向，一个外向，需要协调。',strengths:'ESTP能带INFP体验世界，INFP能带给ESTP深度。',challenges:'生活节奏和价值观差异较大。'}},'ENFJ':{s:70,analysis:{overview:'一个关注人际，一个关注行动。',strengths:'ESTP的活力能吸引ENFJ。',challenges:'ENFJ可能觉得ESTP不够认真，缺乏深度。'}},'ENFP':{s:75,analysis:{overview:'充满冒险和乐趣的组合。',strengths:'都是行动派，能一起探索世界，享受刺激。',challenges:'关系可能缺乏深度和稳定性。'}},'ISTJ':{s:65,analysis:{overview:'一个计划，一个行动，可以合作。',strengths:'ESTP的行动力能帮助ISTJ实现计划。',challenges:'ISTJ可能觉得ESTP太冲动，不靠谱。'}},'ISFJ':{s:75,analysis:{overview:'一个守护，一个冒险，有趣的互补。',strengths:'ESTP能带ISFJ体验新事物，ISFJ能为ESTP提供稳定的港湾。',challenges:'ISFJ的求稳和ESTP的爱冒险是主要矛盾。'}},'ESTJ':{s:80,analysis:{overview:'行动力超强的组合。',strengths:'都是务实的行动派，能共同面对挑战。',challenges:'都比较强势，容易产生冲突。'}},'ESFJ':{s:85,analysis:{overview:'社交达人组合，生活丰富多彩。',strengths:'都是外向、爱社交的人，生活充满乐趣。',challenges:'都比较注重当下的感受，可能缺乏长远规划。'}},'ISTP':{s:95,analysis:{overview:'最佳的冒险伙伴，行动力爆表。',strengths:'都是追求刺激和体验的行动派，生活充满冒险。',challenges:'双方都比较冲动，需要有人扮演更成熟的角色。'}},'ISFP':{s:90,analysis:{overview:'共同追求感官刺激和美好体验。',strengths:'都是注重感官体验的行动派，能一起享受生活。',challenges:'都比较活在当下，可能缺乏长远规划。'}},'ESTP':{s:75,analysis:{overview:'充满竞争和乐趣，但需注意冲动。',strengths:'都是爱冒险的行动派，能一起寻找刺激。',challenges:'双方都可能过于冲动和争强好胜。'}},'ESFP':{s:95,analysis:{overview:'最佳的派对和冒险伙伴。',strengths:'都是外向、爱玩的享乐主义者，生活充满乐趣。',challenges:'关系可能缺乏深度和长远规划。'}}},
+            'ESFP':{'INTJ':{s:60,analysis:{overview:'活在当下与规划未来的矛盾。',strengths:'ESFP能带领INTJ体验生活的乐趣，放松紧绷的神经。',challenges:'价值观和生活重心差异巨大，长期相处挑战重重。'}},'INTP':{s:60,analysis:{overview:'需要找到共同的节奏。',strengths:'ESFP的活力能感染INTP。',challenges:'生活方式和价值观差异巨大。'}},'ENTJ':{s:65,analysis:{overview:'一个重未来，一个重当下，需要协调。',strengths:'ESFP的乐观能感染ENTJ。',challenges:'ENTJ的长期规划和ESFP的活在当下难以统一。'}},'ENTP':{s:75,analysis:{overview:'充满乐趣和新奇体验的组合。',strengths:'在一起总能找到乐子，是派对的焦点。',challenges:'可能都比较冲动，缺乏对未来的规划。'}},'INFJ':{s:60,analysis:{overview:'需要找到共同的生活节奏和目标。',strengths:'ESFP的快乐能感染INFJ。',challenges:'INFJ的深度和ESFP的广度难以调和。'}},'INFP':{s:80,analysis:{overview:'共同享受生活的美好和乐趣。',strengths:'都是活在当下的享乐主义者，能一起创造快乐。',challenges:'可能都缺乏长远规划。'}},'ENFJ':{s:85,analysis:{overview:'充满乐趣和社交活动的组合。',strengths:'都是派对的焦点，能一起享受生活。',challenges:'可能都比较冲动，缺乏长远规划。'}},'ENFP':{s:85,analysis:{overview:'最佳的玩伴，生活充满阳光。',strengths:'都是外向、感性的享乐主义者，生活充满乐趣。',challenges:'可能都比较冲动，缺乏责任感。'}},'ISTJ':{s:75,analysis:{overview:'一个负责，一个享乐，可以互补。',strengths:'ESFP能为ISTJ的生活带来乐趣，ISTJ能为ESFP带来稳定。',challenges:'生活方式和消费观可能差异巨大。'}},'ISFJ':{s:90,analysis:{overview:'充满爱与欢乐的组合。',strengths:'都是热情、有爱心的人，能共同享受生活。',challenges:'ISFJ的计划性可能和ESFP的随性冲突。'}},'ESTJ':{s:75,analysis:{overview:'一个组织，一个享乐，可以互补。',strengths:'ESFP能让ESTJ放松，ESTJ能让ESFP更有条理。',challenges:'消费观和生活方式可能差异大。'}},'ESFJ':{s:95,analysis:{overview:'最佳的社交和享乐伙伴。',strengths:'高度相似的价值观和生活方式，能一起享受生活。',challenges:'可能都比较冲动，需要有人更理性地思考。'}},'ISTP':{s:90,analysis:{overview:'共同享受刺激和感官体验。',strengths:'都是活在当下的享乐主义者，能一起寻找乐趣。',challenges:'可能都缺乏对未来的规划。'}},'ISFP':{s:98,analysis:{overview:'天生的玩伴和艺术家，生活充满色彩。',strengths:'高度相似的价值观和生活方式，是完美的享乐伙伴。',challenges:'关系可能缺乏深度，需要有意识地进行情感交流。'}},'ESTP':{s:95,analysis:{overview:'最佳的派对和冒险伙伴。',strengths:'都是外向、爱玩的享乐主义者，生活充满乐趣。',challenges:'关系可能缺乏深度和长远规划。'}},'ESFP':{s:75,analysis:{overview:'充满乐趣和阳光，但可能缺乏深度。',strengths:'在一起永远不会无聊，是最佳的玩伴。',challenges:'双方都可能过于追求享乐，而忽视了关系的深度和责任。'}}},
+        };
+
+        const grid = document.getElementById('personality-grid');
+        const modal = document.getElementById('personality-modal');
+        const modalBody = document.getElementById('modal-body');
+        const closeModalBtn = document.getElementById('close-modal');
+        
+        const select1 = document.getElementById('personality-select-1');
+        const select2 = document.getElementById('personality-select-2');
+        const checkBtn = document.getElementById('check-compatibility-btn');
+        const resultDiv = document.getElementById('compatibility-result');
+
+        function displayCards() {
+            personalities.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'card cursor-pointer bg-white/60 backdrop-blur-xl border border-white/30 rounded-xl shadow-lg overflow-hidden';
+                card.innerHTML = `
+                    <div class="flex-grow p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-2xl font-bold text-slate-900">${p.id}</h2>
+                            <span class="text-xs font-semibold px-2 py-1 rounded-full" style="background-color: ${p.color}20; color: ${p.color};">${p.group}</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-1">${p.title}</h3>
+                        <p class="text-slate-600 text-sm">${p.description}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => openModal(p));
+                grid.appendChild(card);
+            });
+        }
+
+        function openModal(p) {
+            modalBody.innerHTML = `
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
+                    <div class="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 flex items-center justify-center rounded-full" style="background-color: ${p.color}20;">
+                        <div class="w-20 h-20 md:w-28 md:h-28">${p.svg || ''}</div>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <span class="text-sm font-bold tracking-widest uppercase" style="color: ${p.color};">${p.group}</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mt-1">${p.title} (${p.id})</h2>
+                        <h3 class="text-lg text-slate-600 font-medium">${p.name}</h3>
+                    </div>
+                </div>
+                <div class="mt-6 md:mt-8 border-t border-gray-200 pt-6">
+                    <p class="text-slate-700 leading-relaxed">${p.fullDescription}</p>
+                </div>
+                <div class="mt-6 border-t border-gray-200 pt-6 analysis-content text-slate-700">
+                    ${p.aiAnalysis}
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => modal.classList.add('modal-active'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('modal-active');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        }
+
+        function populateSelectors() {
+            personalities.forEach(p => {
+                const option1 = document.createElement('option');
+                option1.value = p.id;
+                option1.textContent = `${p.id} (${p.title})`;
+                select1.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = p.id;
+                option2.textContent = `${p.id} (${p.title})`;
+                select2.appendChild(option2);
+            });
+        }
+
+        function checkCompatibility() {
+            const type1 = select1.value;
+            const type2 = select2.value;
+
+            if (!type1 || !type2) {
+                resultDiv.innerHTML = `<p class="text-yellow-600">请选择两种性格类型进行配对。</p>`;
+                return;
+            }
+
+            const data = compatibilityData[type1][type2];
+            const score = data.s;
+            const analysis = data.analysis;
+            const p1Data = personalities.find(p => p.id === type1);
+            const p2Data = personalities.find(p => p.id === type2);
+
+            const scoreColor = score > 85 ? 'text-green-500' : score > 65 ? 'text-yellow-500' : 'text-red-500';
+
+            const radius = 54;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (score / 100) * circumference;
+
+            resultDiv.innerHTML = `
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 w-full">
+                    <div class="relative w-32 h-32 flex-shrink-0">
+                        <svg class="w-full h-full" viewBox="0 0 120 120">
+                            <circle class="text-slate-200" stroke-width="12" stroke="currentColor" fill="transparent" r="${radius}" cx="60" cy="60"/>
+                            <circle class="progress-ring__circle" stroke-width="12" stroke-dasharray="${circumference} ${circumference}" style="stroke-dashoffset: ${circumference};" stroke-linecap="round" stroke="url(#scoreGradient)" fill="transparent" r="${radius}" cx="60" cy="60"/>
+                            <defs>
+                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="${p1Data.color}" />
+                                    <stop offset="100%" stop-color="${p2Data.color}" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold ${scoreColor}">${score}</span>
+                    </div>
+                    <div class="md:text-left max-w-md compat-analysis text-slate-700">
+                        <h4 class="text-xl font-bold text-slate-900">${type1} & ${type2}</h4>
+                        <h5>关系概览</h5>
+                        <p>${analysis.overview}</p>
+                        <h5>潜在优势</h5>
+                        <p>${analysis.strengths}</p>
+                        <h5>潜在挑战</h5>
+                        <p>${analysis.challenges}</p>
+                    </div>
+                </div>
+            `;
+            
+             setTimeout(() => {
+                const circle = resultDiv.querySelector('.progress-ring__circle');
+                if(circle) {
+                    circle.style.strokeDashoffset = offset;
+                }
+            }, 100);
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+        checkBtn.addEventListener('click', checkCompatibility);
+
+        displayCards();
+        populateSelectors();
+    </script>
+
 </body>
 </html>
