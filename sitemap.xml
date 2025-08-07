@@ -1,38 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- 1. 首页（必填） -->
   <url>
     <loc>https://aiqimiao.cn/</loc>
+    <!-- 上线当天改成对应日期 -->
     <lastmod>2025-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- 2. 示例：英文首页 -->
-  <url>
-    <loc>https://aiqimiao.cn/en/</loc>
-    <lastmod>2025-08-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- 3. 示例：分类页（动物线稿） -->
-  <url>
-    <loc>https://aiqimiao.cn/category/animals</loc>
-    <lastmod>2025-08-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- 4. 示例：单张可下载的线稿图（如果有独立页面） -->
-  <!--
-  <url>
-    <loc>https://aiqimiao.cn/animals/cat-outline</loc>
-    <lastmod>2025-08-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  -->
 
 </urlset>
