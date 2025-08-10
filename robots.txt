@@ -1,12 +1,4 @@
-robots.txt for aiqimiao.cn
-
-生成日期: 2025‑08‑07
-
-说明: 允许所有搜索引擎完整抓取，并指向站点地图
-
 User-agent: *
-Disallow:
-
-建议您保持 sitemap.xml 定期更新
+Allow: /
 
 Sitemap: https://aiqimiao.cn/sitemap.xml
